@@ -112,17 +112,6 @@ const ICONS = {
     <rect x="16" y="48" width="5" height="4" rx="1" fill="#3a3a3a"/>
     <rect x="39" y="48" width="5" height="4" rx="1" fill="#3a3a3a"/>`),
 
-  stocks: () => svg(`
-    <defs>${lin("st-bg", [[0, "#4a4a4a"], [1, "#050505"]])}
-      ${lin("st-a", [[0, "#4fb3ff"], [1, "#4fb3ff00"]])}</defs>
-    ${bg("st-bg")}
-    <g stroke="#ffffff" stroke-opacity=".14" stroke-width=".8">
-      <line x1="0" y1="18" x2="60" y2="18"/><line x1="0" y1="30" x2="60" y2="30"/><line x1="0" y1="42" x2="60" y2="42"/>
-    </g>
-    <path d="M0 44 L8 40 L14 42 L21 33 L27 36 L34 24 L40 28 L47 17 L53 21 L60 13 V60 H0Z" fill="url(#st-a)" opacity=".55"/>
-    <path d="M0 44 L8 40 L14 42 L21 33 L27 36 L34 24 L40 28 L47 17 L53 21 L60 13" fill="none"
-      stroke="#f4fbff" stroke-width="2" stroke-linejoin="round"/>`),
-
   maps: () => svg(`
     <defs>${lin("mp-bg", [[0, "#f3efe2"], [1, "#ddd6c2"]])}
       ${lin("mp-pin", [[0, "#ff5a4e"], [1, "#b5140d"]])}</defs>

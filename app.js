@@ -7,7 +7,6 @@ const GRID = [
   { id: "photos", name: "Фото" },
   { id: "camera", name: "Камера" },
   { id: "youtube", name: "YouTube", gloss: true },
-  { id: "stocks", name: "Акции", gloss: true },
   { id: "maps", name: "Карты", gloss: true },
   { id: "weather", name: "Погода", gloss: true },
   { id: "notes", name: "Заметки", gloss: true },
