@@ -130,7 +130,7 @@ html, body {
 .dock {
   flex: none;
   position: relative;
-  height: calc(104px + var(--sab));
+  height: 104px;
 }
 .shelf {
   position: absolute;
@@ -239,3 +239,40 @@ html, body {
 .launch[hidden] { display: none; }
 .launch .icon { transition: opacity .3s ease-in; box-shadow: none; }
 .launch.full .icon { opacity: 0; }
+
+/* The iPhone 4s chin with its Home button */
+.chin {
+  flex: none;
+  height: calc(78px + var(--sab));
+  padding-top: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: linear-gradient(#1a1a1a, #050505);
+  border-top: 1px solid #333;
+}
+.home-btn {
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid #3a3a3a;
+  background: radial-gradient(circle at 50% 35%, #2a2a2a, #0a0a0a 70%);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .9), inset 0 -1px 1px rgba(255, 255, 255, .12), 0 1px 0 rgba(255, 255, 255, .08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .06s;
+}
+.home-btn span {
+  width: 18px;
+  height: 18px;
+  border: 1.6px solid rgba(220, 220, 220, .75);
+  border-radius: 4.5px;
+}
+.home-btn.pressed {
+  transform: scale(.95);
+  background: radial-gradient(circle at 50% 40%, #1c1c1c, #050505 70%);
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 1), 0 1px 0 rgba(255, 255, 255, .06);
+}
+.haptic { position: absolute; width: 0; height: 0; overflow: hidden; opacity: 0; }

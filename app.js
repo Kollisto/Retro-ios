@@ -265,7 +265,7 @@ function openSheet() {
 const closeSheet = () => { sheet.hidden = true; };
 
 document.querySelector(".screen").addEventListener("pointerdown", (e) => {
-  if (editing || e.target.closest(".app, .dock")) return;
+  if (editing || e.target.closest(".app, .dock, .chin")) return;
   wallPress = { x: e.clientX, y: e.clientY, timer: setTimeout(openSheet, LONG_PRESS_MS + 100) };
 });
 document.addEventListener("pointermove", (e) => {
@@ -302,6 +302,52 @@ document.addEventListener("click", (e) => {
   if (!link) return;
   e.preventDefault();
   if (link.getAttribute("href") !== "#") launch(link);
+});
+
+// --- Home button: a click you hear and (on iOS 18+) feel; it ends editing and closes the sheet ---
+
+const homeBtn = document.getElementById("home-btn");
+const hapticLabel = document.querySelector(".haptic");
+let audio = null;
+
+function clickSound() {
+  try {
+    if (navigator.audioSession) navigator.audioSession.type = "ambient"; // stays quiet in silent mode
+    audio ||= new (window.AudioContext || window.webkitAudioContext)();
+    const t = audio.currentTime, len = Math.floor(audio.sampleRate * 0.025);
+    const buf = audio.createBuffer(1, len, audio.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 6);
+    const src = audio.createBufferSource();
+    const filter = audio.createBiquadFilter();
+    const gain = audio.createGain();
+    src.buffer = buf;
+    filter.type = "bandpass";
+    filter.frequency.value = 2800;
+    gain.gain.value = 0.9;
+    src.connect(filter).connect(gain).connect(audio.destination);
+    src.start(t);
+  } catch {}
+}
+
+// Safari gives no vibration API, but toggling a native switch plays the system haptic.
+function haptic() {
+  if (navigator.vibrate) navigator.vibrate(10);
+  else hapticLabel.click();
+}
+
+homeBtn.addEventListener("pointerdown", () => {
+  homeBtn.classList.add("pressed");
+  clickSound();
+  haptic();
+});
+for (const type of ["pointerup", "pointercancel", "pointerleave"]) {
+  homeBtn.addEventListener(type, () => homeBtn.classList.remove("pressed"));
+}
+homeBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (!sheet.hidden) closeSheet();
+  else if (editing) setEditing(false);
 });
 
 // --- iOS 5 open / close animation ---
