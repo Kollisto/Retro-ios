@@ -244,10 +244,11 @@ html, body {
 .chin {
   flex: none;
   height: calc(78px + var(--sab));
-  padding-top: 12px;
+  /* centered in the chin, just clear of the home indicator however tall iOS makes the inset */
+  padding-bottom: min(var(--sab), 16px);
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   background: linear-gradient(#1a1a1a, #050505);
   border-top: 1px solid #333;
 }

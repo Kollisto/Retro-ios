@@ -314,19 +314,30 @@ function clickSound() {
   try {
     if (navigator.audioSession) navigator.audioSession.type = "ambient"; // stays quiet in silent mode
     audio ||= new (window.AudioContext || window.webkitAudioContext)();
-    const t = audio.currentTime, len = Math.floor(audio.sampleRate * 0.025);
-    const buf = audio.createBuffer(1, len, audio.sampleRate);
+    const t = audio.currentTime, rate = audio.sampleRate;
+    // a soft, muffled tick: low-passed noise plus a short low thump
+    const len = Math.floor(rate * 0.03);
+    const buf = audio.createBuffer(1, len, rate);
     const data = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 6);
-    const src = audio.createBufferSource();
-    const filter = audio.createBiquadFilter();
-    const gain = audio.createGain();
-    src.buffer = buf;
-    filter.type = "bandpass";
-    filter.frequency.value = 2800;
-    gain.gain.value = 0.9;
-    src.connect(filter).connect(gain).connect(audio.destination);
-    src.start(t);
+    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 8);
+    const noise = audio.createBufferSource();
+    noise.buffer = buf;
+    const lowpass = audio.createBiquadFilter();
+    lowpass.type = "lowpass";
+    lowpass.frequency.value = 1200;
+    const noiseGain = audio.createGain();
+    noiseGain.gain.value = 0.35;
+    noise.connect(lowpass).connect(noiseGain).connect(audio.destination);
+    const thump = audio.createOscillator();
+    thump.frequency.setValueAtTime(190, t);
+    thump.frequency.exponentialRampToValueAtTime(90, t + 0.03);
+    const thumpGain = audio.createGain();
+    thumpGain.gain.setValueAtTime(0.25, t);
+    thumpGain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+    thump.connect(thumpGain).connect(audio.destination);
+    noise.start(t);
+    thump.start(t);
+    thump.stop(t + 0.05);
   } catch {}
 }
 
