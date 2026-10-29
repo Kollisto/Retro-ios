@@ -14,10 +14,13 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+/* The page is a document as tall as the whole display (like a normal scrolling site), because
+   iOS 26 home-screen web apps clip fixed layers at a window height shorter than the screen. */
 html, body {
   margin: 0;
-  height: 100%;
+  height: var(--app-h, 100%);
   overflow: hidden;
+  overscroll-behavior: none;
   background: #000;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-user-select: none;
@@ -25,8 +28,10 @@ html, body {
   -webkit-touch-callout: none;
 }
 
+body { position: relative; }
+
 #wall {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -34,7 +39,7 @@ html, body {
 }
 
 .screen {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;

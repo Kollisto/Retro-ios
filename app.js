@@ -249,6 +249,9 @@ function endPress() {
 document.addEventListener("pointerup", endPress);
 document.addEventListener("pointercancel", endPress);
 document.addEventListener("contextmenu", (e) => e.preventDefault());
+// The document is taller than iOS's window, so keep it from scrolling.
+document.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+addEventListener("scroll", () => scrollTo(0, 0));
 
 // --- Long press on the wallpaper opens the wallpaper sheet ---
 
