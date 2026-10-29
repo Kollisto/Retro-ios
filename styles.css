@@ -146,11 +146,13 @@ html, body {
 }
 .dock-apps {
   position: relative;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  justify-content: center;
   padding: 8px 8px 0;
+  min-height: 100px;
+  touch-action: none;
 }
-.dock .app { justify-content: flex-start; gap: 14px; }
+.dock .app { flex: 0 0 25%; justify-content: flex-start; gap: 14px; }
 .dock .icon {
   -webkit-box-reflect: below 2px linear-gradient(transparent 62%, rgba(255, 255, 255, .28));
 }
@@ -161,9 +163,9 @@ html, body {
   50% { transform: rotate(1.8deg); }
   100% { transform: rotate(-1.8deg); }
 }
-.editing .grid .icon { animation: jiggle .26s infinite ease-in-out; }
-.editing .grid .app:nth-child(2n) .icon { animation-delay: -.13s; }
-.editing .grid .app:nth-child(3n) .icon { animation-duration: .3s; }
+.editing .icon { animation: jiggle .26s infinite ease-in-out; }
+.editing .app:nth-child(2n) .icon { animation-delay: -.13s; }
+.editing .app:nth-child(3n) .icon { animation-duration: .3s; }
 .app.dragging { position: relative; z-index: 10; }
 .app.dragging .icon { animation: none; transform: scale(1.18); opacity: .85; }
 .editing .app:active .icon { filter: none; }

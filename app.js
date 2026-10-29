@@ -1,4 +1,4 @@
-// Home screen layout: up to 24 icons in the grid, 4 in the dock.
+// Default home screen layout: up to 24 icons in the grid, 4 in the dock.
 // url is the app's deep link. Apps without one open through a Shortcut named "Retro <name>"
 // that the user creates once in the Shortcuts app (see README).
 
@@ -67,26 +67,43 @@ if (new URLSearchParams(location.search).has("preview")) {
 }
 
 const ORDER_KEY = "retro5-order";
+const ALL = [...GRID, ...DOCK];
 
-// Restores the grid order the user arranged; new apps go to the end.
-function savedGrid() {
-  let order = [];
-  try { order = JSON.parse(localStorage.getItem(ORDER_KEY)) || []; } catch {}
-  const rank = (app) => (order.includes(app.id) ? order.indexOf(app.id) : order.length + GRID.indexOf(app));
-  return [...GRID].sort((a, b) => rank(a) - rank(b));
+// Restores where the user put each icon; apps the layout doesn't know keep their default place.
+function savedLayout() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(ORDER_KEY)); } catch {}
+  if (Array.isArray(saved)) saved = { grid: saved, dock: DOCK.map((a) => a.id) }; // older format
+  if (!saved || !Array.isArray(saved.grid) || !Array.isArray(saved.dock)) {
+    return { grid: GRID, dock: DOCK };
+  }
+  const byId = new Map(ALL.map((a) => [a.id, a]));
+  const pick = (ids) => ids.map((id) => byId.get(id)).filter(Boolean);
+  const dock = pick(saved.dock).slice(0, DOCK_SIZE);
+  const placed = new Set([...dock, ...pick(saved.grid)].map((a) => a.id));
+  const grid = pick(saved.grid).filter((a) => !dock.includes(a));
+  for (const app of ALL) {
+    if (placed.has(app.id)) continue;
+    if (DOCK.includes(app) && dock.length < DOCK_SIZE) dock.push(app);
+    else grid.push(app);
+  }
+  return { grid, dock };
 }
 
 function saveOrder() {
-  const ids = [...grid.children].map((el) => el.dataset.id);
-  try { localStorage.setItem(ORDER_KEY, JSON.stringify(ids)); } catch {}
+  const ids = (c) => [...c.children].map((el) => el.dataset.id);
+  try { localStorage.setItem(ORDER_KEY, JSON.stringify({ grid: ids(grid), dock: ids(dock) })); } catch {}
 }
 
+const GRID_SIZE = 24, DOCK_SIZE = 4;
 const grid = document.getElementById("grid");
-render(grid, savedGrid());
-render(document.getElementById("dock"), DOCK);
+const dock = document.getElementById("dock");
+const layout = savedLayout();
+render(grid, layout.grid);
+render(dock, layout.dock);
 setInterval(refreshLive, 1000);
 
-// --- Edit mode: long press makes icons jiggle, then drag to rearrange the grid ---
+// --- Edit mode: long press makes icons jiggle, then drag to rearrange the grid and the dock ---
 
 const LONG_PRESS_MS = 500;
 let editing = false;
@@ -98,8 +115,19 @@ function setEditing(on) {
   if (!on) saveOrder();
 }
 
-// Cell index under the finger, from the grid's 4x6 geometry.
-function cellAt(x, y) {
+const capacity = (c) => (c === dock ? DOCK_SIZE : GRID_SIZE);
+
+// Container and slot under the finger. The grid uses its 4x6 geometry; the dock is a single
+// centered row, so its slot is the number of other dock icons left of the finger.
+function slotAt(x, y, el) {
+  if (y >= dock.getBoundingClientRect().top) {
+    const others = [...dock.children].filter((n) => n !== el);
+    const index = others.filter((n) => {
+      const r = n.getBoundingClientRect();
+      return r.left + r.width / 2 < x;
+    }).length;
+    return { container: dock, index };
+  }
   const r = grid.getBoundingClientRect();
   const cs = getComputedStyle(grid);
   const left = r.left + parseFloat(cs.paddingLeft), top = r.top + parseFloat(cs.paddingTop);
@@ -107,17 +135,33 @@ function cellAt(x, y) {
   const h = (r.height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)) / 6;
   const col = Math.min(3, Math.max(0, Math.floor((x - left) / w)));
   const row = Math.min(5, Math.max(0, Math.floor((y - top) / h)));
-  return Math.min(row * 4 + col, grid.children.length - 1);
+  return { container: grid, index: row * 4 + col };
 }
 
 // Moves the dragged icon to a new slot and slides the others into place (FLIP).
-function moveTo(el, index) {
-  const items = [...grid.children];
-  if (items.indexOf(el) === index) return;
+// Dropping onto a full container swaps with the icon in that slot.
+function moveTo(el, { container, index }) {
+  const from = el.parentNode;
+  const fromItems = [...from.children];
+  const others = [...container.children].filter((n) => n !== el);
+  if (container !== from && others.length >= capacity(container)) {
+    const target = others[Math.min(index, others.length - 1)];
+    animateShift(() => {
+      from.insertBefore(target, el);
+      container.insertBefore(el, others[others.indexOf(target) + 1] || null);
+    });
+    return;
+  }
+  index = Math.min(index, others.length);
+  if (container === from && fromItems.indexOf(el) === index) return;
+  animateShift(() => container.insertBefore(el, others[index] || null));
+}
+
+function animateShift(change) {
+  const items = [...grid.children, ...dock.children].filter((n) => n !== press.el);
   const before = new Map(items.map((n) => [n, n.getBoundingClientRect()]));
-  const rest = items.filter((n) => n !== el);
-  grid.insertBefore(el, rest[index] || null);
-  for (const n of rest) {
+  change();
+  for (const n of items) {
     const a = before.get(n), b = n.getBoundingClientRect();
     if (a.left === b.left && a.top === b.top) continue;
     n.style.transition = "none";
@@ -146,13 +190,15 @@ function startDrag() {
   el.classList.add("dragging");
 }
 
-grid.addEventListener("pointerdown", (e) => {
-  const el = e.target.closest(".app");
-  if (!el) return;
-  press = { el, x: e.clientX, y: e.clientY, dragging: false };
-  if (editing) startDrag();
-  else press.timer = setTimeout(() => { setEditing(true); startDrag(); }, LONG_PRESS_MS);
-});
+for (const container of [grid, dock]) {
+  container.addEventListener("pointerdown", (e) => {
+    const el = e.target.closest(".app");
+    if (!el) return;
+    press = { el, x: e.clientX, y: e.clientY, dragging: false };
+    if (editing) startDrag();
+    else press.timer = setTimeout(() => { setEditing(true); startDrag(); }, LONG_PRESS_MS);
+  });
+}
 
 document.addEventListener("pointermove", (e) => {
   if (!press) return;
@@ -161,7 +207,7 @@ document.addEventListener("pointermove", (e) => {
     return;
   }
   e.preventDefault();
-  moveTo(press.el, cellAt(e.clientX, e.clientY));
+  moveTo(press.el, slotAt(e.clientX, e.clientY, press.el));
   follow(e.clientX, e.clientY);
 });
 
