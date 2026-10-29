@@ -232,7 +232,7 @@ const Goose = (() => {
   }
 
   // With the neck lowered, the beak tip sits this far from the goose's left edge (facing right).
-  const PECK_REACH = 62, PECK_DROP = 57;
+  const PECK_REACH = 68, PECK_DROP = 56;
 
   function feed() {
     if (!on) return;

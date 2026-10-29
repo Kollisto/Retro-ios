@@ -306,7 +306,7 @@ body { position: relative; }
 .goose g { transform-box: view-box; }
 .gs-neck { transform-origin: 37px 42px; transition: transform .25s ease; }
 .goose.pecking .gs-neck { animation: peck .7s ease-in-out infinite; }
-@keyframes peck { 0%, 100% { transform: rotate(0); } 45%, 60% { transform: rotate(108deg); } }
+@keyframes peck { 0%, 100% { transform: rotate(0); } 45%, 60% { transform: rotate(75deg); } }
 .gs-beak-bottom { transform-origin: 50.5px 17px; transition: transform .08s; }
 .goose.honking .gs-beak-bottom { transform: rotate(24deg); }
 .goose.honking .gs-neck { transform: rotate(-12deg); }
