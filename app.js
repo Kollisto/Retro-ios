@@ -138,20 +138,26 @@ function slotAt(x, y, el) {
   return { container: grid, index: row * 4 + col };
 }
 
+// Marks (or clears) the icon the dragged one will swap with when the finger lifts.
+function setSwapTarget(target) {
+  if (press.swapTarget === target) return;
+  press.swapTarget?.classList.remove("swap-target");
+  press.swapTarget = target;
+  target?.classList.add("swap-target");
+}
+
 // Moves the dragged icon to a new slot and slides the others into place (FLIP).
-// Dropping onto a full container swaps with the icon in that slot.
+// Over a full container nothing moves yet: the icon under the finger is marked and the two
+// swap on release.
 function moveTo(el, { container, index }) {
   const from = el.parentNode;
   const fromItems = [...from.children];
   const others = [...container.children].filter((n) => n !== el);
   if (container !== from && others.length >= capacity(container)) {
-    const target = others[Math.min(index, others.length - 1)];
-    animateShift(() => {
-      from.insertBefore(target, el);
-      container.insertBefore(el, others[others.indexOf(target) + 1] || null);
-    });
+    setSwapTarget(others[Math.min(index, others.length - 1)]);
     return;
   }
+  setSwapTarget(null);
   index = Math.min(index, others.length);
   if (container === from && fromItems.indexOf(el) === index) return;
   animateShift(() => container.insertBefore(el, others[index] || null));
@@ -216,6 +222,23 @@ function endPress() {
   clearTimeout(press.timer);
   if (press.dragging) {
     const el = press.el;
+    const target = press.swapTarget;
+    if (target) {
+      setSwapTarget(null);
+      const was = el.getBoundingClientRect();
+      const from = el.parentNode, to = target.parentNode;
+      const next = target.nextSibling === el ? target : target.nextSibling;
+      animateShift(() => {
+        from.insertBefore(target, el);
+        to.insertBefore(el, next);
+      });
+      // keep the icon under the finger, then let it glide into its new slot
+      el.style.transform = "";
+      const now = el.getBoundingClientRect();
+      el.style.transition = "none";
+      el.style.transform = `translate(${was.left - now.left}px, ${was.top - now.top}px)`;
+      el.getBoundingClientRect();
+    }
     el.classList.remove("dragging");
     el.style.transition = "transform .2s ease";
     el.style.transform = "";

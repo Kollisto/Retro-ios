@@ -168,7 +168,9 @@ html, body {
 .editing .app:nth-child(3n) .icon { animation-duration: .3s; }
 .app.dragging { position: relative; z-index: 10; }
 .app.dragging .icon { animation: none; transform: scale(1.18); opacity: .85; }
+.app.dragging .label { visibility: hidden; }
 .editing .app:active .icon { filter: none; }
+.app.swap-target .icon { filter: brightness(.55); }
 
 /* iOS 5 action sheet for choosing the wallpaper */
 .sheet-backdrop {
