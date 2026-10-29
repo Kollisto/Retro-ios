@@ -303,11 +303,11 @@ body { position: relative; }
   pointer-events: auto;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .35));
 }
-.goose svg { display: block; width: 100%; height: 100%; }
+.goose svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .goose g { transform-box: view-box; }
 .gs-neck { transform-origin: 43px 34px; transition: transform .25s ease; }
 .goose.pecking .gs-neck { animation: peck .7s ease-in-out infinite; }
-@keyframes peck { 0%, 100% { transform: rotate(0); } 45%, 60% { transform: rotate(72deg); } }
+@keyframes peck { 0%, 100% { transform: rotate(0); } 45%, 60% { transform: rotate(128deg); } }
 .gs-beak-bottom { transform-origin: 53px 14.5px; transition: transform .08s; }
 .goose.honking .gs-beak-bottom { transform: rotate(22deg); }
 .goose.honking .gs-neck { transform: rotate(-12deg); }
@@ -316,7 +316,7 @@ body { position: relative; }
 .goose.walking .gs-leg-a { animation: stride .36s ease-in-out infinite; }
 .goose.walking .gs-leg-b { animation: stride .36s ease-in-out infinite reverse; }
 .goose.running .gs-leg-a, .goose.running .gs-leg-b { animation-duration: .18s; }
-@keyframes stride { 0%, 100% { transform: rotate(-24deg); } 50% { transform: rotate(24deg); } }
+@keyframes stride { 0%, 100% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } }
 .goose.walking svg { animation: waddle .36s ease-in-out infinite; }
 .goose.running svg { animation-duration: .18s; }
 @keyframes waddle { 50% { translate: 0 -1.5px; } }
@@ -325,11 +325,10 @@ body { position: relative; }
   position: absolute;
   left: 0;
   top: 0;
-  width: 9px;
-  height: 8px;
-  background: radial-gradient(ellipse at 50% 100%, rgba(120, 80, 30, .45) 30%, transparent 32%),
-    conic-gradient(from -35deg at 50% 100%, rgba(120, 80, 30, .45) 0 70deg, transparent 0);
-  border-radius: 40% 40% 50% 50%;
+  width: 10px;
+  height: 10px;
+  /* a webbed three-toed goose foot, toes pointing the way it walked */
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 9.5 L1 1.5 Q3 3 5 1 Q7 3 9 1.5 Z' fill='%23785028' fill-opacity='.5'/%3E%3Cpath d='M5 9.5 L1 1.5 M5 9.5 L5 1 M5 9.5 L9 1.5' stroke='%23785028' stroke-opacity='.7' stroke-width='.9' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") center / contain no-repeat;
   animation: print-fade 2.6s linear forwards;
 }
 @keyframes print-fade { from { opacity: .9; } to { opacity: 0; } }
