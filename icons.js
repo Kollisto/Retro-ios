@@ -244,6 +244,19 @@ const ICONS = {
       <path d="M46.6 33.5 A17 17 0 0 1 38 45" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.4" stroke-linecap="round"/>
     </g>`),
 
+  // Starts and stops the goose (goose.js).
+  goose: () => svg(`
+    <defs>${lin("gi-bg", [[0, "#8fd0ff"], [0.62, "#bfe6ff"], [0.63, "#7cc04a"], [1, "#3f8a22"]])}
+      ${lin("gi-n", [[0, "#ffffff"], [1, "#dfe3e8"]], 1, 0)}</defs>
+    ${bg("gi-bg")}
+    <path d="M18 62 Q16 40 26 30 Q30 26 30 20" fill="none" stroke="#b9bfc7" stroke-width="13" stroke-linecap="round"/>
+    <path d="M18 62 Q16 40 26 30 Q30 26 30 20" fill="none" stroke="url(#gi-n)" stroke-width="11" stroke-linecap="round"/>
+    <circle cx="33" cy="17" r="10" fill="url(#gi-n)" stroke="#b9bfc7" stroke-width=".8"/>
+    <path d="M41 13 L54 17 L41 21Z" fill="#f39a26" stroke="#c46f0c" stroke-width=".6"/>
+    <path d="M41 19 L51 19.5 L41 23Z" fill="#e0861a" stroke="#c46f0c" stroke-width=".5"/>
+    <circle cx="36" cy="14" r="1.8" fill="#111"/>
+    <circle cx="36.6" cy="13.4" r=".6" fill="#fff"/>`),
+
   appstore: () => svg(`
     <defs>${lin("as-bg", [[0, "#7cc6fb"], [1, "#1458c4"]])}</defs>
     ${bg("as-bg")}

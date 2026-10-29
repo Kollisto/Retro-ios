@@ -28,6 +28,7 @@ const GRID = [
   { id: "oura", name: "Oura", gloss: true, url: "oura://" },
   { id: "teams", name: "Teams", gloss: true, url: "msteams://" },
   { id: "focusfriend", name: "Focus Friend", gloss: true, url: sc("Focus Friend") },
+  { id: "goose", name: "Гусь", gloss: true },
 ];
 
 const DOCK = [
@@ -113,6 +114,7 @@ let press = null; // { el, x, y, timer, dragging, grabX, grabY }
 function setEditing(on) {
   editing = on;
   document.body.classList.toggle("editing", on);
+  if (on) Goose.releaseIcon();
   if (!on) saveOrder();
 }
 
@@ -306,6 +308,7 @@ document.addEventListener("click", (e) => {
   if (!link) return;
   e.preventDefault();
   if (link.dataset.id === "refresh") refreshApp(link);
+  else if (link.dataset.id === "goose") Goose.toggle();
   else if (link.getAttribute("href") !== "#") launch(link);
 });
 
@@ -364,6 +367,7 @@ homeBtn.addEventListener("click", (e) => {
   e.stopPropagation();
   if (!sheet.hidden) closeSheet();
   else if (editing) setEditing(false);
+  else Goose.feed();
 });
 
 // --- "Обновить": drop the offline cache and reload, so the newest version shows up ---

@@ -290,3 +290,87 @@ body { position: relative; }
 /* "Обновить" turns its arrows while the cache is cleared */
 @keyframes spin { to { transform: rotate(360deg); } }
 .icon.spinning .rf-arrows { transform-origin: 30px 30px; animation: spin .7s linear infinite; }
+
+/* --- The goose --- */
+.goose-tracks, .goose-layer { position: absolute; inset: 0; pointer-events: none; }
+.goose-layer { z-index: 20; }
+.goose {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 64px;
+  height: 64px;
+  pointer-events: auto;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .35));
+}
+.goose svg { display: block; width: 100%; height: 100%; }
+.goose g { transform-box: view-box; }
+.gs-neck { transform-origin: 43px 34px; transition: transform .25s ease; }
+.goose.pecking .gs-neck { animation: peck .7s ease-in-out infinite; }
+@keyframes peck { 0%, 100% { transform: rotate(0); } 45%, 60% { transform: rotate(72deg); } }
+.gs-beak-bottom { transform-origin: 53px 14.5px; transition: transform .08s; }
+.goose.honking .gs-beak-bottom { transform: rotate(22deg); }
+.goose.honking .gs-neck { transform: rotate(-12deg); }
+.gs-leg-a { transform-origin: 29px 46px; }
+.gs-leg-b { transform-origin: 36px 46px; }
+.goose.walking .gs-leg-a { animation: stride .36s ease-in-out infinite; }
+.goose.walking .gs-leg-b { animation: stride .36s ease-in-out infinite reverse; }
+.goose.running .gs-leg-a, .goose.running .gs-leg-b { animation-duration: .18s; }
+@keyframes stride { 0%, 100% { transform: rotate(-24deg); } 50% { transform: rotate(24deg); } }
+.goose.walking svg { animation: waddle .36s ease-in-out infinite; }
+.goose.running svg { animation-duration: .18s; }
+@keyframes waddle { 50% { translate: 0 -1.5px; } }
+
+.goose-print {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 9px;
+  height: 8px;
+  background: radial-gradient(ellipse at 50% 100%, rgba(120, 80, 30, .45) 30%, transparent 32%),
+    conic-gradient(from -35deg at 50% 100%, rgba(120, 80, 30, .45) 0 70deg, transparent 0);
+  border-radius: 40% 40% 50% 50%;
+  animation: print-fade 2.6s linear forwards;
+}
+@keyframes print-fade { from { opacity: .9; } to { opacity: 0; } }
+
+.app.carried { position: relative; z-index: 19; }
+.app.carried .label { visibility: hidden; }
+
+.goose-food {
+  position: absolute;
+  width: 22px;
+  height: 12px;
+  animation: thrown .45s ease-out;
+}
+.goose-food i {
+  position: absolute;
+  width: 7px;
+  height: 5px;
+  border-radius: 40%;
+  background: linear-gradient(#f3d9a4, #c9944b);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .35);
+  transition: opacity .25s, transform .25s;
+}
+.goose-food i:nth-child(1) { left: 0; top: 4px; }
+.goose-food i:nth-child(2) { left: 7px; top: 0; }
+.goose-food i:nth-child(3) { left: 13px; top: 5px; }
+.goose-food i:nth-child(4) { left: 6px; top: 7px; }
+.goose-food i.eaten { opacity: 0; transform: scale(.3); }
+@keyframes thrown { from { transform: translateY(-160px) scale(1.4); opacity: 0; } 60% { opacity: 1; } }
+
+.goose-note {
+  position: absolute;
+  padding: 8px 10px;
+  max-width: 120px;
+  pointer-events: auto;
+  background: linear-gradient(#fff8b8, #f2df78);
+  color: #3b3326;
+  font: 15px "Marker Felt", "Noteworthy", cursive;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .4);
+  transform: rotate(var(--tilt));
+  animation: note-in .3s ease-out;
+  transition: opacity .3s, transform .3s;
+}
+.goose-note.gone { opacity: 0; transform: rotate(var(--tilt)) scale(.6); }
+@keyframes note-in { from { transform: rotate(var(--tilt)) scale(.4); opacity: 0; } }
