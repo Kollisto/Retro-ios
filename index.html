@@ -21,11 +21,17 @@
       <span class="sb-battery"></span>
     </div>
     <nav class="grid" id="grid"></nav>
+    <div class="pager" aria-hidden="true">
+      <svg class="lupe" viewBox="0 0 10 10"><circle cx="4" cy="4" r="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <line x1="6.2" y1="6.2" x2="9" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="dot"></span>
+    </div>
     <footer class="dock">
       <div class="shelf"></div>
       <nav class="dock-apps" id="dock"></nav>
     </footer>
   </main>
+  <div class="launch" id="launch" hidden></div>
   <div class="sheet-backdrop" id="sheet" hidden>
     <div class="sheet">
       <button class="btn" id="pick-wall">Выбрать обои из Фото</button>

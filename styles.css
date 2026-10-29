@@ -60,7 +60,7 @@ html, body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(6, 1fr);
-  padding: 14px 8px 4px;
+  padding: 14px 8px 0;
   min-height: 0;
   touch-action: none;
 }
@@ -212,3 +212,30 @@ html, body {
   background: linear-gradient(#727272, #4c4c4c 50%, #3b3b3b 51%, #2c2c2c);
   box-shadow: 0 1px 0 rgba(255, 255, 255, .2), inset 0 1px 0 rgba(255, 255, 255, .35);
 }
+
+/* Page indicator above the dock: Spotlight magnifier and the single page dot */
+.pager {
+  flex: none;
+  height: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+}
+.pager .lupe { width: 8px; height: 8px; color: rgba(255, 255, 255, .55); filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .6)); }
+.pager .dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; box-shadow: 0 1px 1px rgba(0, 0, 0, .6); }
+
+/* Opening an app, as in iOS 4–6: the app grows out of its icon over the home screen */
+.launch {
+  position: fixed;
+  z-index: 40;
+  background: #000;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .38s ease-in;
+}
+.launch[hidden] { display: none; }
+.launch .icon { transition: opacity .3s ease-in; box-shadow: none; }
+.launch.full .icon { opacity: 0; }

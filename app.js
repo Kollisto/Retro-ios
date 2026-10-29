@@ -299,7 +299,59 @@ document.addEventListener("click", (e) => {
     if (!link) setEditing(false); // tap on the wallpaper finishes editing
     return;
   }
-  if (link && link.getAttribute("href") === "#") e.preventDefault();
+  if (!link) return;
+  e.preventDefault();
+  if (link.getAttribute("href") !== "#") launch(link);
 });
+
+// --- iOS 5 open / close animation ---
+
+const launchEl = document.getElementById("launch");
+let launched = null; // { link, timer }
+
+function placeOver(rect, radius) {
+  Object.assign(launchEl.style, {
+    left: rect.left + "px", top: rect.top + "px",
+    width: rect.width + "px", height: rect.height + "px", borderRadius: radius,
+  });
+}
+
+function launch(link) {
+  if (launched) return;
+  const icon = link.querySelector(".icon");
+  const rect = icon.getBoundingClientRect();
+  launchEl.innerHTML = icon.outerHTML;
+  launchEl.style.transition = "none";
+  launchEl.classList.remove("full");
+  placeOver(rect, "13px");
+  launchEl.hidden = false;
+  launchEl.getBoundingClientRect();
+  launchEl.style.transition = "";
+  placeOver({ left: 0, top: 0, width: innerWidth, height: innerHeight }, "0");
+  launchEl.classList.add("full");
+  launched = { link, timer: setTimeout(() => {
+    location.href = link.href;
+    // If nothing opened (or the user declined iOS's prompt), come back on our own.
+    launched.timer = setTimeout(closeApp, 2500);
+  }, 380) };
+}
+
+// Back on the home screen: the app shrinks into its icon.
+function closeApp() {
+  if (!launched) return;
+  clearTimeout(launched.timer);
+  const rect = launched.link.querySelector(".icon").getBoundingClientRect();
+  launched = null;
+  launchEl.classList.remove("full");
+  placeOver(rect, "13px");
+  setTimeout(() => { launchEl.hidden = true; }, 380);
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (!launched) return;
+  if (document.hidden) clearTimeout(launched.timer); // the app opened; wait for the user to return
+  else setTimeout(closeApp, 150);
+});
+addEventListener("pageshow", () => setTimeout(closeApp, 150));
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
