@@ -232,8 +232,8 @@ const ICONS = {
 
   // Not an iOS 5 app: clears the cache and reloads Retro 5. Drawn like an iOS 5 utility icon.
   refresh: () => svg(`
-    <defs>${lin("rf-bg", [[0, "#9ad86a"], [1, "#2f8a1c"]])}
-      ${lin("rf-a", [[0, "#ffffff"], [1, "#e2ecdc"]])}</defs>
+    <defs>${lin("rf-bg", [[0, "#b3c9a3"], [1, "#58774c"]])}
+      ${lin("rf-a", [[0, "#ffffff"], [1, "#e6ece2"]])}</defs>
     ${bg("rf-bg")}
     <g class="rf-arrows">
       <path d="M30 13 A17 17 0 0 1 46.6 26.5" fill="none" stroke="url(#rf-a)" stroke-width="5" stroke-linecap="round"/>
