@@ -301,22 +301,19 @@ body { position: relative; }
   width: 64px;
   height: 64px;
   pointer-events: auto;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .35));
 }
 .goose svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .goose g { transform-box: view-box; }
-.gs-neck { transform-origin: 43px 34px; transition: transform .25s ease; }
+.gs-neck { transform-origin: 37px 42px; transition: transform .25s ease; }
 .goose.pecking .gs-neck { animation: peck .7s ease-in-out infinite; }
-@keyframes peck { 0%, 100% { transform: rotate(0); } 45%, 60% { transform: rotate(128deg); } }
-.gs-beak-bottom { transform-origin: 53px 14.5px; transition: transform .08s; }
-.goose.honking .gs-beak-bottom { transform: rotate(22deg); }
+@keyframes peck { 0%, 100% { transform: rotate(0); } 45%, 60% { transform: rotate(108deg); } }
+.gs-beak-bottom { transform-origin: 50.5px 17px; transition: transform .08s; }
+.goose.honking .gs-beak-bottom { transform: rotate(24deg); }
 .goose.honking .gs-neck { transform: rotate(-12deg); }
-.gs-leg-a { transform-origin: 29px 46px; }
-.gs-leg-b { transform-origin: 36px 46px; }
 .goose.walking .gs-leg-a { animation: stride .36s ease-in-out infinite; }
 .goose.walking .gs-leg-b { animation: stride .36s ease-in-out infinite reverse; }
 .goose.running .gs-leg-a, .goose.running .gs-leg-b { animation-duration: .18s; }
-@keyframes stride { 0%, 100% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } }
+@keyframes stride { 0%, 100% { transform: translate(-1.6px, 0); } 50% { transform: translate(1.6px, -2px); } }
 .goose.walking svg { animation: waddle .36s ease-in-out infinite; }
 .goose.running svg { animation-duration: .18s; }
 @keyframes waddle { 50% { translate: 0 -1.5px; } }

@@ -18,28 +18,27 @@ const Goose = (() => {
 
   const el = document.createElement("div");
   el.className = "goose";
+  // Flat, cute style: one dark outline around the whole silhouette, flat fills, dot eye.
+  // Outlines are drawn first and fills on top, so joints between body and neck stay seamless.
+  const BODY = "M9 40 Q6 37 10 36 Q16 30 29 31 Q40 32 43 39 Q45 50 34 53 Q20 55 13 48 Q8 45 9 40Z";
+  const NECK = "M31.5 41 Q35.5 28 36.8 19 Q38 9.5 45 9.5 Q51.5 9.5 51.5 16 Q51.5 21 47 24 Q44 31 41 45 L34 46Z";
   el.innerHTML = `
     <svg viewBox="0 0 64 64">
-      <defs>
-        <linearGradient id="gs-b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9dde2"/></linearGradient>
-      </defs>
-      <ellipse cx="32" cy="60" rx="15" ry="2.6" fill="#000" opacity=".22"/>
-      <g class="gs-legs" stroke="#f08a1c" stroke-width="2.4" stroke-linecap="round" fill="#f08a1c">
-        <g class="gs-leg gs-leg-a"><line x1="29" y1="46" x2="28" y2="57"/><path d="M28 57 L23 59 L32 59Z"/></g>
-        <g class="gs-leg gs-leg-b"><line x1="36" y1="46" x2="37" y2="57"/><path d="M37 57 L32 59 L41 59Z"/></g>
+      <ellipse cx="29" cy="59" rx="14" ry="2.2" fill="#000" opacity=".16"/>
+      <g class="gs-legs" fill="#ef5a24" stroke="#1d1d1d" stroke-width="1.6" stroke-linejoin="round">
+        <path class="gs-leg gs-leg-a" d="M21 52 h6 v4.5 h4 q1.2 0 1.2 1.2 v.8 h-11.2Z"/>
+        <path class="gs-leg gs-leg-b" d="M30 52 h6 v4.5 h4 q1.2 0 1.2 1.2 v.8 h-11.2Z"/>
       </g>
-      <path d="M14 34 L6 30 L12 38Z" fill="#e7eaee" stroke="#b9bfc7" stroke-width=".6"/>
-      <ellipse cx="31" cy="38" rx="18" ry="11" fill="url(#gs-b)" stroke="#b9bfc7" stroke-width=".7"/>
-      <path d="M18 36 Q28 30 40 37 Q30 44 18 36Z" fill="#eef0f3" stroke="#c3c8cf" stroke-width=".6"/>
+      <path d="${BODY}" fill="#1d1d1d" stroke="#1d1d1d" stroke-width="3.2" stroke-linejoin="round"/>
+      <g class="gs-neck"><path d="${NECK}" fill="#1d1d1d" stroke="#1d1d1d" stroke-width="3.2" stroke-linejoin="round"/></g>
+      <path d="${BODY}" fill="#f6f2ee"/>
       <g class="gs-neck">
-        <path d="M43 34 Q48 26 47 15" fill="none" stroke="#b9bfc7" stroke-width="8.6" stroke-linecap="round"/>
-        <path d="M43 34 Q48 26 47 15" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
-        <circle cx="48.5" cy="12.5" r="5.6" fill="#fff" stroke="#b9bfc7" stroke-width=".7"/>
-        <g class="gs-beak">
-          <path class="gs-beak-top" d="M53 11 L61.5 13 L53.5 14.4Z" fill="#f39a26" stroke="#c46f0c" stroke-width=".5"/>
-          <path class="gs-beak-bottom" d="M53.5 14 L60 14.6 L53 16Z" fill="#e0861a" stroke="#c46f0c" stroke-width=".5"/>
+        <path d="${NECK}" fill="#f6f2ee"/>
+        <g class="gs-beak" stroke="#1d1d1d" stroke-width="1.5" stroke-linejoin="round" fill="#ef5a24">
+          <path class="gs-beak-bottom" d="M50.5 16.5 Q55 16.5 57 17.6 Q54.5 19.6 50 19.2Z"/>
+          <path class="gs-beak-top" d="M50 12.4 Q56 12 59 14.6 Q56.5 17.4 50.2 17.6Z"/>
         </g>
-        <circle cx="50.3" cy="11.2" r="1.1" fill="#111"/>
+        <circle cx="46" cy="14.6" r="1.25" fill="#1d1d1d"/>
       </g>
     </svg>`;
 

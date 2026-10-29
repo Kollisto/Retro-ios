@@ -244,18 +244,24 @@ const ICONS = {
       <path d="M46.6 33.5 A17 17 0 0 1 38 45" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.4" stroke-linecap="round"/>
     </g>`),
 
-  // Starts and stops the goose (goose.js).
+  // Starts and stops the goose (goose.js), drawn in the same flat cute style.
   goose: () => svg(`
-    <defs>${lin("gi-bg", [[0, "#8fd0ff"], [0.62, "#bfe6ff"], [0.63, "#7cc04a"], [1, "#3f8a22"]])}
-      ${lin("gi-n", [[0, "#ffffff"], [1, "#dfe3e8"]], 1, 0)}</defs>
+    <defs>${lin("gi-bg", [[0, "#4d74a3"], [1, "#2f527e"]])}</defs>
     ${bg("gi-bg")}
-    <path d="M18 62 Q16 40 26 30 Q30 26 30 20" fill="none" stroke="#b9bfc7" stroke-width="13" stroke-linecap="round"/>
-    <path d="M18 62 Q16 40 26 30 Q30 26 30 20" fill="none" stroke="url(#gi-n)" stroke-width="11" stroke-linecap="round"/>
-    <circle cx="33" cy="17" r="10" fill="url(#gi-n)" stroke="#b9bfc7" stroke-width=".8"/>
-    <path d="M41 13 L54 17 L41 21Z" fill="#f39a26" stroke="#c46f0c" stroke-width=".6"/>
-    <path d="M41 19 L51 19.5 L41 23Z" fill="#e0861a" stroke="#c46f0c" stroke-width=".5"/>
-    <circle cx="36" cy="14" r="1.8" fill="#111"/>
-    <circle cx="36.6" cy="13.4" r=".6" fill="#fff"/>`),
+    <ellipse cx="29" cy="52" rx="13" ry="2" fill="#000" opacity=".18"/>
+    <g fill="#ef5a24" stroke="#1d1d1d" stroke-width="1.5" stroke-linejoin="round">
+      <path d="M22 46 h5 v4 h3.5 q1 0 1 1 v.6 h-9.5Z"/><path d="M30 46 h5 v4 h3.5 q1 0 1 1 v.6 h-9.5Z"/>
+    </g>
+    <g stroke="#1d1d1d" stroke-width="3" stroke-linejoin="round" fill="#1d1d1d">
+      <path d="M12 36 Q9.5 33 13 32.5 Q18 27 29 28 Q38.5 29 41 35 Q43 44 33 47 Q21 49 15 43 Q11 41 12 36Z"/>
+      <path d="M32 33 Q35 24 35.5 17 Q36.5 9 42.5 9 Q48 9 48 14.5 Q48 18.8 44 21.5 Q42 27 42 35Z"/>
+    </g>
+    <g fill="#f6f2ee">
+      <path d="M12 36 Q9.5 33 13 32.5 Q18 27 29 28 Q38.5 29 41 35 Q43 44 33 47 Q21 49 15 43 Q11 41 12 36Z"/>
+      <path d="M32 33 Q35 24 35.5 17 Q36.5 9 42.5 9 Q48 9 48 14.5 Q48 18.8 44 21.5 Q42 27 42 35Z"/>
+    </g>
+    <path d="M47 11.5 Q52 11 54.5 13.4 Q52.5 15.8 47.2 16Z" fill="#ef5a24" stroke="#1d1d1d" stroke-width="1.4" stroke-linejoin="round"/>
+    <circle cx="43.2" cy="13.4" r="1.1" fill="#1d1d1d"/>`),
 
   appstore: () => svg(`
     <defs>${lin("as-bg", [[0, "#7cc6fb"], [1, "#1458c4"]])}</defs>
