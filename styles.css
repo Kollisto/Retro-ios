@@ -310,12 +310,20 @@ body { position: relative; }
 .gs-beak-bottom { transform-origin: 50.5px 17px; transition: transform .08s; }
 .goose.honking .gs-beak-bottom { transform: rotate(24deg); }
 .goose.honking .gs-neck { transform: rotate(-12deg); }
-.goose.walking .gs-leg-a { animation: stride .36s ease-in-out infinite; }
-.goose.walking .gs-leg-b { animation: stride .36s ease-in-out infinite reverse; }
-.goose.running .gs-leg-a, .goose.running .gs-leg-b { animation-duration: .18s; }
-@keyframes stride { 0%, 100% { transform: translate(-1.6px, 0); } 50% { transform: translate(1.6px, -2px); } }
-.goose.walking svg { animation: waddle .36s ease-in-out infinite; }
-.goose.running svg { animation-duration: .18s; }
+/* Alternating gait: one foot swings forward lifted while the other is planted and slides back */
+.goose { --step: .44s; }
+.goose.running { --step: .22s; }
+.goose.walking .gs-leg { animation: stride-side var(--step) linear infinite; }
+.goose.walking .gs-leg-b { animation-delay: calc(var(--step) / -2); }
+.goose.walking .view-front .gs-leg, .goose.walking .view-back .gs-leg { animation-name: stride-lift; }
+@keyframes stride-side {
+  0% { transform: translate(-2.2px, 0); }
+  25% { transform: translate(0, -2.6px); }
+  50% { transform: translate(2.2px, 0); }
+  100% { transform: translate(-2.2px, 0); }
+}
+@keyframes stride-lift { 0%, 50%, 100% { transform: translateY(0); } 25% { transform: translateY(-3px); } }
+.goose.walking svg { animation: waddle calc(var(--step) / 2) ease-in-out infinite; }
 @keyframes waddle { 50% { translate: 0 -1.5px; } }
 
 .goose-print {
@@ -370,3 +378,16 @@ body { position: relative; }
 }
 .goose-note.gone { opacity: 0; transform: rotate(var(--tilt)) scale(.6); }
 @keyframes note-in { from { transform: rotate(var(--tilt)) scale(.4); opacity: 0; } }
+
+/* front / back / side views */
+.goose .gs-view { position: absolute; inset: 0; display: none; }
+.goose[data-view="side"] .view-side, .goose[data-view="front"] .view-front, .goose[data-view="back"] .view-back { display: block; }
+.goose .gs-mouth { display: none; }
+.goose.honking .gs-mouth { display: inline; }
+.goose.honking .gs-beak-front { transform: translateY(-2px); transform-box: view-box; }
+
+/* angry goose: frowning brows and a little shake */
+.goose .gs-brow { display: none; }
+.goose.angry .gs-brow { display: inline; }
+.goose.angry .gs-view { animation: fume .16s linear infinite; }
+@keyframes fume { 0%, 100% { rotate: -3deg; } 50% { rotate: 3deg; } }
