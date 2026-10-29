@@ -181,6 +181,48 @@ document.addEventListener("pointerup", endPress);
 document.addEventListener("pointercancel", endPress);
 document.addEventListener("contextmenu", (e) => e.preventDefault());
 
+// --- Long press on the wallpaper opens the wallpaper sheet ---
+
+const sheet = document.getElementById("sheet");
+const wallFile = document.getElementById("wall-file");
+let wallPress = null;
+let sheetOpenedAt = 0;
+
+function openSheet() {
+  document.getElementById("reset-wall").hidden = !hasPhotoWallpaper();
+  sheet.hidden = false;
+  sheetOpenedAt = Date.now();
+}
+const closeSheet = () => { sheet.hidden = true; };
+
+document.querySelector(".screen").addEventListener("pointerdown", (e) => {
+  if (editing || e.target.closest(".app, .dock")) return;
+  wallPress = { x: e.clientX, y: e.clientY, timer: setTimeout(openSheet, LONG_PRESS_MS + 100) };
+});
+document.addEventListener("pointermove", (e) => {
+  if (wallPress && Math.hypot(e.clientX - wallPress.x, e.clientY - wallPress.y) > 10) {
+    clearTimeout(wallPress.timer);
+    wallPress = null;
+  }
+});
+for (const type of ["pointerup", "pointercancel"]) {
+  document.addEventListener(type, () => {
+    if (wallPress) clearTimeout(wallPress.timer);
+    wallPress = null;
+  });
+}
+
+sheet.addEventListener("click", (e) => {
+  if (Date.now() - sheetOpenedAt < 400) return; // the finger lifting after the long press
+  if (e.target === sheet || e.target.id === "cancel-sheet") closeSheet();
+});
+document.getElementById("pick-wall").addEventListener("click", () => { closeSheet(); wallFile.click(); });
+document.getElementById("reset-wall").addEventListener("click", () => { closeSheet(); resetWallpaper(); });
+wallFile.addEventListener("change", () => {
+  if (wallFile.files[0]) setPhotoWallpaper(wallFile.files[0]);
+  wallFile.value = "";
+});
+
 document.addEventListener("click", (e) => {
   const link = e.target.closest(".app");
   if (editing) {

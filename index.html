@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <canvas id="wall"></canvas>
   <main class="screen">
     <div class="statusbar" aria-hidden="true">
       <span class="sb-time"></span>
@@ -25,6 +26,15 @@
       <nav class="dock-apps" id="dock"></nav>
     </footer>
   </main>
+  <div class="sheet-backdrop" id="sheet" hidden>
+    <div class="sheet">
+      <button class="btn" id="pick-wall">Выбрать обои из Фото</button>
+      <button class="btn" id="reset-wall">Стандартные обои</button>
+      <button class="btn cancel" id="cancel-sheet">Отменить</button>
+    </div>
+  </div>
+  <input type="file" id="wall-file" accept="image/*" hidden>
+  <script src="wallpaper.js"></script>
   <script src="icons.js"></script>
   <script src="app.js"></script>
 </body>
