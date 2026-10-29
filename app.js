@@ -384,7 +384,7 @@ function launch(link) {
   launchEl.hidden = false;
   launchEl.getBoundingClientRect();
   launchEl.style.transition = "";
-  placeOver({ left: 0, top: 0, width: innerWidth, height: innerHeight }, "0");
+  placeOver({ left: 0, top: 0, width: innerWidth, height: appHeight() }, "0");
   launchEl.classList.add("full");
   launched = { link, timer: setTimeout(() => {
     location.href = link.href;

@@ -1,6 +1,18 @@
 // Wallpaper: hand-drawn "water drops on glass" by default, or a photo the user picked
 // (stored only on this phone). Both are painted onto one full-screen canvas.
 
+// iOS 26 home-screen web apps report a window that stops short of the bottom of the display,
+// so fixed full-screen layers leave a black strip. Size them to the whole screen instead.
+function appHeight() {
+  const standalone = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+  return standalone ? Math.max(innerHeight, screen.height) : innerHeight;
+}
+function fitScreen() {
+  document.documentElement.style.setProperty("--app-h", appHeight() + "px");
+}
+fitScreen();
+addEventListener("resize", fitScreen);
+
 const WALL_KEY = "retro5-wallpaper";
 const wall = document.getElementById("wall");
 
@@ -72,7 +84,7 @@ function drawDrops(ctx, w, h, unit) {
 
 function paintWallpaper() {
   const dpr = window.devicePixelRatio || 1;
-  const w = Math.round(innerWidth * dpr), h = Math.round(innerHeight * dpr);
+  const w = Math.round(innerWidth * dpr), h = Math.round(appHeight() * dpr);
   wall.width = w;
   wall.height = h;
   const ctx = wall.getContext("2d");
@@ -93,7 +105,7 @@ function setPhotoWallpaper(file) {
   const img = new Image();
   img.onload = () => {
     const dpr = window.devicePixelRatio || 1;
-    const w = Math.round(innerWidth * dpr), h = Math.round(innerHeight * dpr);
+    const w = Math.round(innerWidth * dpr), h = Math.round(appHeight() * dpr);
     const s = Math.max(w / img.width, h / img.height);
     const c = document.createElement("canvas");
     c.width = w;
