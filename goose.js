@@ -84,23 +84,31 @@ const Goose = (() => {
       if (navigator.audioSession) navigator.audioSession.type = "ambient";
       audio ||= new (window.AudioContext || window.webkitAudioContext)();
       const t0 = audio.currentTime;
-      for (const [start, f] of [[0, 330], [0.17, 300]]) {
-        const t = t0 + start;
+      // a low, nasal honk with a slight tremble, like a real goose
+      for (const [start, f] of [[0, 260], [0.2, 240]]) {
+        const t = t0 + start, dur = 0.17;
         const osc = audio.createOscillator();
         osc.type = "sawtooth";
         osc.frequency.setValueAtTime(f, t);
-        osc.frequency.exponentialRampToValueAtTime(f * 0.78, t + 0.13);
+        osc.frequency.exponentialRampToValueAtTime(f * 0.9, t + dur * 0.9);
+        const tremble = audio.createOscillator();
+        const trembleDepth = audio.createGain();
+        tremble.frequency.value = 28;
+        trembleDepth.gain.value = f * 0.04;
+        tremble.connect(trembleDepth).connect(osc.frequency);
         const formant = audio.createBiquadFilter();
         formant.type = "bandpass";
-        formant.frequency.value = 1100;
-        formant.Q.value = 1.6;
+        formant.frequency.value = 800;
+        formant.Q.value = 3.5;
         const gain = audio.createGain();
         gain.gain.setValueAtTime(0.0001, t);
-        gain.gain.exponentialRampToValueAtTime(0.5, t + 0.015);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+        gain.gain.exponentialRampToValueAtTime(0.8, t + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
         osc.connect(formant).connect(gain).connect(audio.destination);
         osc.start(t);
-        osc.stop(t + 0.16);
+        tremble.start(t);
+        osc.stop(t + dur + 0.02);
+        tremble.stop(t + dur + 0.02);
       }
     } catch {}
     el.classList.add("honking");
