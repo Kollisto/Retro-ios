@@ -286,3 +286,7 @@ body { position: relative; }
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 1), 0 1px 0 rgba(255, 255, 255, .06);
 }
 .haptic { position: absolute; width: 0; height: 0; overflow: hidden; opacity: 0; }
+
+/* "Обновить" turns its arrows while the cache is cleared */
+@keyframes spin { to { transform: rotate(360deg); } }
+.icon.spinning .rf-arrows { transform-origin: 30px 30px; animation: spin .7s linear infinite; }

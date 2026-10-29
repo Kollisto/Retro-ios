@@ -230,16 +230,18 @@ const ICONS = {
       <circle cx="30" cy="30" r="1.8" fill="#e0261d"/>`);
   },
 
-  itunes: () => svg(`
-    <defs>${lin("it-bg", [[0, "#d27eff"], [1, "#6d17b8"]])}</defs>
-    ${bg("it-bg")}
-    <circle cx="30" cy="30" r="20" fill="none" stroke="#fff" stroke-width="2.6" opacity=".95"/>
-    <g fill="#fff">
-      <path d="M25 22.5 L40 18.5 V22.5 L25 26.5Z"/>
-      <rect x="25" y="22.5" width="2.4" height="15"/>
-      <rect x="37.6" y="18.5" width="2.4" height="15"/>
-      <ellipse cx="22.6" cy="38.3" rx="4.4" ry="3.4" transform="rotate(-22 22.6 38.3)"/>
-      <ellipse cx="35.2" cy="34.3" rx="4.4" ry="3.4" transform="rotate(-22 35.2 34.3)"/>
+  // Not an iOS 5 app: clears the cache and reloads Retro 5. Drawn like an iOS 5 utility icon.
+  refresh: () => svg(`
+    <defs>${lin("rf-bg", [[0, "#9ad86a"], [1, "#2f8a1c"]])}
+      ${lin("rf-a", [[0, "#ffffff"], [1, "#e2ecdc"]])}</defs>
+    ${bg("rf-bg")}
+    <g class="rf-arrows">
+      <path d="M30 13 A17 17 0 0 1 46.6 26.5" fill="none" stroke="url(#rf-a)" stroke-width="5" stroke-linecap="round"/>
+      <path d="M41 27 L50 29 L50.5 19.5 Z" fill="#fff"/>
+      <path d="M30 47 A17 17 0 0 1 13.4 33.5" fill="none" stroke="url(#rf-a)" stroke-width="5" stroke-linecap="round"/>
+      <path d="M19 33 L10 31 L9.5 40.5 Z" fill="#fff"/>
+      <path d="M13.4 26.5 A17 17 0 0 1 22 15" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M46.6 33.5 A17 17 0 0 1 38 45" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.4" stroke-linecap="round"/>
     </g>`),
 
   appstore: () => svg(`

@@ -15,7 +15,7 @@ const GRID = [
   { id: "notes", name: "Заметки", gloss: true, url: "mobilenotes://" },
   { id: "reminders", name: "Напоминания", gloss: true, url: "x-apple-reminderkit://" },
   { id: "clock", name: "Часы", gloss: true, url: sc("Часы") },
-  { id: "itunes", name: "iTunes Store", gloss: true, url: "itms://" },
+  { id: "refresh", name: "Обновить", gloss: true },
   { id: "appstore", name: "App Store", gloss: true, url: "itms-apps://" },
   { id: "settings", name: "Настройки", url: sc("Настройки") },
   { id: "safari", name: "Safari", gloss: true, url: "x-safari-https://www.google.com" },
@@ -78,7 +78,8 @@ function savedLayout() {
     return { grid: GRID, dock: DOCK };
   }
   const byId = new Map(ALL.map((a) => [a.id, a]));
-  const pick = (ids) => ids.map((id) => byId.get(id)).filter(Boolean);
+  const RENAMED = { itunes: "refresh" }; // icons replaced in place keep their slot
+  const pick = (ids) => ids.map((id) => byId.get(RENAMED[id] || id)).filter(Boolean);
   const dock = pick(saved.dock).slice(0, DOCK_SIZE);
   const placed = new Set([...dock, ...pick(saved.grid)].map((a) => a.id));
   const grid = pick(saved.grid).filter((a) => !dock.includes(a));
@@ -304,7 +305,8 @@ document.addEventListener("click", (e) => {
   }
   if (!link) return;
   e.preventDefault();
-  if (link.getAttribute("href") !== "#") launch(link);
+  if (link.dataset.id === "refresh") refreshApp(link);
+  else if (link.getAttribute("href") !== "#") launch(link);
 });
 
 // --- Home button: a click you hear and (on iOS 18+) feel; it ends editing and closes the sheet ---
@@ -363,6 +365,20 @@ homeBtn.addEventListener("click", (e) => {
   if (!sheet.hidden) closeSheet();
   else if (editing) setEditing(false);
 });
+
+// --- "Обновить": drop the offline cache and reload, so the newest version shows up ---
+// The layout, wallpaper and weather settings live in local storage and are kept.
+
+async function refreshApp(link) {
+  link.querySelector(".icon").classList.add("spinning");
+  try {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((k) => caches.delete(k)));
+    const reg = await navigator.serviceWorker?.getRegistration();
+    await reg?.update();
+  } catch {}
+  location.reload();
+}
 
 // --- iOS 5 open / close animation ---
 
