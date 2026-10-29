@@ -16,35 +16,35 @@ const GRID = [
   { id: "appstore", name: "App Store", gloss: true },
   { id: "settings", name: "Настройки" },
   { id: "safari", name: "Safari", gloss: true },
-  { id: "instagram", name: "Instagram", ph: ["I", "#8a5a3c"] },
-  { id: "telegram", name: "Telegram", ph: ["T", "#2a9fd8"] },
-  { id: "reddit", name: "Reddit", ph: ["R", "#ff4500"] },
-  { id: "threads", name: "Threads", ph: ["@", "#111"] },
-  { id: "revolut", name: "Revolut", ph: ["R", "#222"] },
-  { id: "trafi", name: "Trafi", ph: ["T", "#18b26b"] },
-  { id: "oura", name: "Oura", ph: ["O", "#333"] },
-  { id: "teams", name: "Teams", ph: ["T", "#5059c9"] },
-  { id: "focusfriend", name: "Focus Friend", ph: ["F", "#d99a5b"] },
+  { id: "instagram", name: "Instagram", gloss: true },
+  { id: "telegram", name: "Telegram", gloss: true },
+  { id: "reddit", name: "Reddit", gloss: true },
+  { id: "threads", name: "Threads", gloss: true },
+  { id: "revolut", name: "Revolut", gloss: true },
+  { id: "trafi", name: "Trafi", gloss: true },
+  { id: "oura", name: "Oura", gloss: true },
+  { id: "teams", name: "Teams", gloss: true },
+  { id: "focusfriend", name: "Focus Friend", gloss: true },
 ];
 
 const DOCK = [
   { id: "phone", name: "Телефон", gloss: true },
   { id: "mail", name: "Почта", gloss: true },
-  { id: "chrome", name: "Chrome", ph: ["C", "#4285f4"] },
-  { id: "spotify", name: "Spotify", ph: ["S", "#1db954"] },
+  { id: "chrome", name: "Chrome", gloss: true },
+  { id: "spotify", name: "Spotify", gloss: true },
 ];
 
 const LIVE = ["calendar", "clock"];
 
 function iconSvg(app) {
-  return app.ph ? ICONS.placeholder(...app.ph) : ICONS[app.id]();
+  return ICONS[app.id]();
 }
 
 function render(container, apps) {
   container.innerHTML = apps
     .map((app) => `
       <a class="app" data-id="${app.id}" href="${app.url || "#"}">
-        <div class="icon${app.gloss || app.ph ? " gloss" : ""}">${iconSvg(app)}</div>
+        <div class="icon${app.gloss ? " gloss" : ""}">${iconSvg(app)}</div>
         <span class="label">${app.name}</span>
       </a>`)
     .join("");

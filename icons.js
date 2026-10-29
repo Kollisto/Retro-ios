@@ -239,9 +239,127 @@ const ICONS = {
     <circle cx="30" cy="30" r="5.5" fill="url(#se-g)" stroke="#4b5058" stroke-width="1"/>
     <circle cx="30" cy="30" r="2.2" fill="#4b5058"/>`),
 
-  // Stage 3 will replace these with hand-drawn icons.
-  placeholder: (letter, color) => svg(`
-    <rect width="60" height="60" fill="${color}"/>
-    <text x="30" y="40" text-anchor="middle" fill="#fff" font-size="28" font-weight="700"
-      font-family="Helvetica Neue, Helvetica, Arial">${letter}</text>`),
+  // --- Third-party apps, redrawn as if they shipped in 2011 ---
+
+  instagram: () => {
+    const rainbow = ["#e0393e", "#f5a623", "#f8e71c", "#4cb84c", "#3b8fd9"]
+      .map((c, i) => `<rect x="${8 + i * 2.6}" y="0" width="2.6" height="20" fill="${c}"/>`).join("");
+    return svg(`
+      <defs>${lin("ig-t", [[0, "#8a5a3a"], [1, "#5e3b22"]])}
+        ${lin("ig-b", [[0, "#efe3cf"], [1, "#cdb795"]])}
+        ${rad("ig-l", [[0, "#5b8fd1"], [0.45, "#1d3b66"], [1, "#03070e"]], 0.4, 0.38, 0.62)}</defs>
+      <rect width="60" height="60" fill="url(#ig-b)"/>
+      <rect width="60" height="20" fill="url(#ig-t)"/>
+      <rect width="60" height="20" fill="none" stroke="#3b2414" stroke-dasharray="1.4 1.4" stroke-width=".6" opacity=".5"/>
+      ${rainbow}
+      <rect y="20" width="60" height="1.2" fill="#3b2414" opacity=".45"/>
+      <rect x="40" y="5" width="11" height="8" rx="2" fill="#1b1b1b" stroke="#c9b08d" stroke-width=".8"/>
+      <rect x="42" y="6.8" width="7" height="4.4" rx="1" fill="#3a5d8f"/>
+      <circle cx="30" cy="33" r="15" fill="#2a2a2a" stroke="#a89371" stroke-width="1.4"/>
+      <circle cx="30" cy="33" r="12" fill="#111" stroke="#555" stroke-width=".6"/>
+      <circle cx="30" cy="33" r="9.5" fill="url(#ig-l)"/>
+      <circle cx="30" cy="33" r="4" fill="#04080f"/>
+      <ellipse cx="26.5" cy="29.5" rx="3" ry="2" fill="#fff" opacity=".6" transform="rotate(-35 26.5 29.5)"/>`);
+  },
+
+  spotify: () => svg(`
+    <defs>${lin("sp-bg", [[0, "#4a4a4a"], [1, "#0c0c0c"]])}
+      ${rad("sp-c", [[0, "#a8e063"], [0.7, "#80c02c"], [1, "#5c9a12"]], 0.45, 0.35, 0.7)}</defs>
+    ${bg("sp-bg")}
+    <circle cx="30" cy="30" r="19" fill="url(#sp-c)" stroke="#2f5208" stroke-width=".8"/>
+    <g fill="none" stroke="#1c1c1c" stroke-linecap="round">
+      <path d="M17.5 24.5 Q30 20 43 26" stroke-width="3.6"/>
+      <path d="M19 31 Q30 27.5 41 32.5" stroke-width="3"/>
+      <path d="M20.5 37 Q30 34.5 38.5 38.5" stroke-width="2.5"/>
+    </g>`),
+
+  chrome: () => {
+    const wedge = (rot, c1, c2, id) => `
+      <defs>${lin(id, [[0, c1], [1, c2]])}</defs>
+      <path d="M30 30 L30 8 A22 22 0 0 1 49.05 41 Z" fill="url(#${id})" transform="rotate(${rot} 30 30)"/>`;
+    return svg(`
+      <defs>${lin("cr-bg", [[0, "#ffffff"], [1, "#d9dde3"]])}
+        ${rad("cr-c", [[0, "#8fc8ff"], [0.6, "#3a86e8"], [1, "#1d5fc4"]], 0.42, 0.36, 0.6)}</defs>
+      ${bg("cr-bg")}
+      <circle cx="30" cy="30.8" r="22.4" fill="#000" opacity=".18"/>
+      ${wedge(-60, "#ff6e5a", "#c8231a", "cr-r")}
+      ${wedge(60, "#ffe066", "#e8a800", "cr-y")}
+      ${wedge(180, "#5fd36a", "#18923a", "cr-g")}
+      <circle cx="30" cy="30" r="10.5" fill="#fff"/>
+      <circle cx="30" cy="30" r="8.2" fill="url(#cr-c)"/>`);
+  },
+
+  telegram: () => svg(`
+    <defs>${lin("tg-bg", [[0, "#6fd0ff"], [1, "#1a7fc8"]])}
+      ${lin("tg-p", [[0, "#ffffff"], [1, "#dcecf7"]])}</defs>
+    ${bg("tg-bg")}
+    <path d="M11 29.5 L46 15.5 C47.6 14.9 48.9 16 48.5 17.7 L42.6 45 C42.2 46.8 40.6 47.4 39.1 46.4 L30.5 40 L26 44.2 C25.3 44.9 24.3 44.6 24.1 43.6 L22.6 36.3 L12.2 32.9 C10.4 32.3 10.2 30.3 11 29.5Z"
+      fill="url(#tg-p)" stroke="rgba(0,0,0,.15)" stroke-width=".6"/>
+    <path d="M22.6 36.3 L41.5 21 L28 38.2 L26 44.2" fill="#b9d4e8"/>`),
+
+  reddit: () => svg(`
+    <defs>${lin("rd-bg", [[0, "#ff8a4c"], [1, "#e23a00"]])}
+      ${lin("rd-h", [[0, "#ffffff"], [1, "#e4e8ec"]])}</defs>
+    ${bg("rd-bg")}
+    <path d="M31 22 L33.5 11.5 L42 13.5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+    <circle cx="44" cy="13.8" r="3.2" fill="url(#rd-h)"/>
+    <circle cx="15.5" cy="28" r="4.5" fill="url(#rd-h)"/>
+    <circle cx="44.5" cy="28" r="4.5" fill="url(#rd-h)"/>
+    <ellipse cx="30" cy="35" rx="17" ry="12.5" fill="url(#rd-h)" stroke="rgba(0,0,0,.12)" stroke-width=".6"/>
+    <circle cx="23.5" cy="33" r="3.2" fill="#ff4500"/>
+    <circle cx="36.5" cy="33" r="3.2" fill="#ff4500"/>
+    <path d="M23.5 40 Q30 44.5 36.5 40" fill="none" stroke="#7a2a0a" stroke-width="1.6" stroke-linecap="round"/>`),
+
+  threads: () => svg(`
+    <defs>${lin("th-bg", [[0, "#3c3c3c"], [1, "#050505"]])}</defs>
+    ${bg("th-bg")}
+    <text x="30" y="43" text-anchor="middle" fill="#fff" font-size="38" font-weight="700"
+      font-family="Helvetica Neue, Helvetica, Arial">@</text>`),
+
+  revolut: () => svg(`
+    <defs>${lin("rv-bg", [[0, "#3a4a72"], [1, "#0b1226"]])}</defs>
+    ${bg("rv-bg")}
+    <path d="M19 15 H33 C40.2 15 44.5 19.2 44.5 25.4 C44.5 30.2 41.8 33.7 37.4 35 L45 46 H37.6 L30.6 35.6 H26 V46 H19 Z M26 21.2 V29.6 H32.6 C35.6 29.6 37.4 28 37.4 25.4 C37.4 22.8 35.6 21.2 32.6 21.2 Z"
+      fill="#fff" fill-rule="evenodd"/>`),
+
+  trafi: () => svg(`
+    <defs>${lin("tf-bg", [[0, "#3fe0a0"], [1, "#0a9a68"]])}</defs>
+    ${bg("tf-bg")}
+    <path d="M16 44 C16 32 26 34 28 26 C30 18 40 18 44 16" fill="none" stroke="#fff" stroke-width="4"
+      stroke-linecap="round" stroke-dasharray="0.1 7.5" opacity=".9"/>
+    <circle cx="16" cy="44" r="5.5" fill="#fff"/>
+    <circle cx="16" cy="44" r="2.4" fill="#0f9e6c"/>
+    <path d="M44 9.5c-3.6 0-6.4 2.7-6.4 6.2 0 4.6 6.4 11.2 6.4 11.2s6.4-6.6 6.4-11.2c0-3.5-2.8-6.2-6.4-6.2z"
+      fill="#fff"/>
+    <circle cx="44" cy="15.7" r="2.4" fill="#0f9e6c"/>`),
+
+  oura: () => svg(`
+    <defs>${lin("or-bg", [[0, "#4b4f58"], [1, "#0d0e12"]])}
+      ${lin("or-r", [[0, "#ffffff"], [0.5, "#c9ced6"], [1, "#8c939e"]], 1, 1)}</defs>
+    ${bg("or-bg")}
+    <rect x="21" y="12" width="18" height="3.2" rx="1.6" fill="url(#or-r)"/>
+    <circle cx="30" cy="34" r="13.5" fill="none" stroke="url(#or-r)" stroke-width="4.6"/>`),
+
+  teams: () => svg(`
+    <defs>${lin("tm-bg", [[0, "#8b93ff"], [1, "#4049b8"]])}
+      ${lin("tm-t", [[0, "#6a72e8"], [1, "#3b43a8"]])}</defs>
+    ${bg("tm-bg")}
+    <circle cx="44" cy="20" r="5" fill="#fff" opacity=".9"/>
+    <path d="M36 27 H52 V38 C52 43 49 45.5 45 45.5 C41 45.5 38 43 37.5 39 Z" fill="#fff" opacity=".9"/>
+    <circle cx="32" cy="16.5" r="6" fill="#fff"/>
+    <rect x="8" y="19" width="26" height="26" rx="3" fill="url(#tm-t)" stroke="#fff" stroke-width="1.4"/>
+    <path d="M14 25 H28 V29 H23.2 V40 H18.8 V29 H14 Z" fill="#fff"/>`),
+
+  focusfriend: () => svg(`
+    <defs>${lin("ff-bg", [[0, "#fde7c4"], [1, "#e9b87a"]])}
+      ${rad("ff-b", [[0, "#c58a52"], [0.8, "#8f5a2c"], [1, "#6e4220"]], 0.4, 0.35, 0.7)}</defs>
+    ${bg("ff-bg")}
+    <ellipse cx="30" cy="34" rx="16" ry="17" fill="url(#ff-b)"/>
+    <ellipse cx="25" cy="26" rx="4" ry="2.6" fill="#fff" opacity=".22" transform="rotate(-25 25 26)"/>
+    <path d="M22.5 34 Q25 31.5 27.5 34 M32.5 34 Q35 31.5 37.5 34" fill="none" stroke="#2b1708" stroke-width="1.6" stroke-linecap="round"/>
+    <ellipse cx="21" cy="38.5" rx="2.6" ry="1.6" fill="#f08a8a" opacity=".7"/>
+    <ellipse cx="39" cy="38.5" rx="2.6" ry="1.6" fill="#f08a8a" opacity=".7"/>
+    <path d="M27.5 39 Q30 41 32.5 39" fill="none" stroke="#2b1708" stroke-width="1.3" stroke-linecap="round"/>
+    <path d="M30 17.5 Q29 12 31.5 9" fill="none" stroke="#5c8a2e" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M31 11 Q37 7 40 11 Q35 15 31 11Z" fill="#7cc04a"/>`),
 };
