@@ -180,29 +180,39 @@ const Goose = (() => {
     task = { kind: "stand", until: performance.now() + 900 };
   }
 
+  // With the neck lowered, the beak tip sits this far from the goose's left edge (facing right).
+  const PECK_REACH = 62, PECK_DROP = 57;
+
   function feed() {
     if (!on) return;
     food?.el.remove();
-    const b = box();
     let spot;
     for (let i = 0; i < 10; i++) { // throw it somewhere away from the goose
       spot = randomSpot();
       if (Math.hypot(spot.x - x, spot.y - y) > 140) break;
     }
+    const fx = spot.x + SIZE / 2, fy = spot.y + PECK_DROP; // where the crumbs land
     const f = document.createElement("div");
     f.className = "goose-food";
     f.innerHTML = "<i></i><i></i><i></i><i></i>";
-    f.style.left = spot.x + (dir > 0 ? 44 : 8) + "px";
-    f.style.top = Math.min(spot.y + 52, b.bottom + 20) + "px";
+    f.style.left = fx - 11 + "px";
+    f.style.top = fy - 6 + "px";
     layer.append(f);
-    food = { el: f, x: spot.x, y: spot.y };
+    food = { el: f, x: fx, y: fy };
     dropCarried();
-    task = { kind: "walk", tx: spot.x, ty: spot.y, speed: RUN, then: eat };
+    // walk up so the beak, not the tail, ends at the crumbs
+    const face = fx > x + SIZE / 2 ? 1 : -1;
+    task = {
+      kind: "walk", speed: RUN,
+      tx: face > 0 ? fx - PECK_REACH : fx - (SIZE - PECK_REACH), ty: fy - PECK_DROP,
+      then: () => { dir = face; eat(); },
+    };
   }
 
   function eat() {
     const f = food;
     if (!f) return;
+    dir = f.x > x + SIZE / 2 ? 1 : -1; // turn to the food
     task = { kind: "peck", until: performance.now() + 1800 };
     const crumbs = [...f.el.children];
     crumbs.forEach((c, i) => setTimeout(() => c.classList.add("eaten"), 350 + i * 360));
