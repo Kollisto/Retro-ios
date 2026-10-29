@@ -1,5 +1,5 @@
 // Offline cache. Bump VERSION whenever any file changes.
-const VERSION = "retro5-v2";
+const VERSION = "retro5-v3";
 const FILES = ["./", "index.html", "styles.css", "icons.js", "app.js", "manifest.webmanifest",
   "apple-touch-icon.png", "icon-192.png", "icon-512.png"];
 
@@ -15,6 +15,15 @@ self.addEventListener("activate", (e) => {
   self.clients.claim();
 });
 
+// Network first so updates show up right away; the cache keeps it working offline.
 self.addEventListener("fetch", (e) => {
-  e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request)));
+  e.respondWith(
+    fetch(e.request)
+      .then((res) => {
+        const copy = res.clone();
+        caches.open(VERSION).then((c) => c.put(e.request, copy));
+        return res;
+      })
+      .catch(() => caches.match(e.request, { ignoreSearch: true }))
+  );
 });

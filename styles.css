@@ -59,6 +59,7 @@ html, body {
   grid-template-rows: repeat(6, 1fr);
   padding: 14px 8px 4px;
   min-height: 0;
+  touch-action: none;
 }
 
 .app {
@@ -70,6 +71,7 @@ html, body {
   text-decoration: none;
   color: #fff;
   min-width: 0;
+  -webkit-user-drag: none;
 }
 
 .icon {
@@ -149,3 +151,16 @@ html, body {
 .dock .icon {
   -webkit-box-reflect: below 2px linear-gradient(transparent 62%, rgba(255, 255, 255, .28));
 }
+
+/* Edit mode: icons jiggle; the one being dragged is lifted */
+@keyframes jiggle {
+  0% { transform: rotate(-1.8deg); }
+  50% { transform: rotate(1.8deg); }
+  100% { transform: rotate(-1.8deg); }
+}
+.editing .grid .icon { animation: jiggle .26s infinite ease-in-out; }
+.editing .grid .app:nth-child(2n) .icon { animation-delay: -.13s; }
+.editing .grid .app:nth-child(3n) .icon { animation-duration: .3s; }
+.app.dragging { position: relative; z-index: 10; }
+.app.dragging .icon { animation: none; transform: scale(1.18); opacity: .85; }
+.editing .app:active .icon { filter: none; }
