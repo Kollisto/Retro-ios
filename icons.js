@@ -134,18 +134,51 @@ const ICONS = {
       fill="url(#mp-pin)" stroke="#7d0a05" stroke-width=".6"/>
     <circle cx="44" cy="13.3" r="2.7" fill="#7d0a05"/>`),
 
-  weather: () => {
+  // Shows the live weather (see weather.js); without data it is the classic iOS 5 "sun, 73°".
+  weather: (w = WEATHER_NOW) => {
+    const kind = w ? w.kind : "clear", day = w ? w.day : true;
+    const temp = w ? `${Math.round(w.temp)}°` : "73°";
+    const bgs = {
+      day: [[0, "#6ebdf8"], [1, "#1c5fc0"]],
+      night: [[0, "#34508a"], [1, "#0b1530"]],
+      grey: [[0, "#a9bccf"], [1, "#4d6582"]],
+      storm: [[0, "#5d6a7e"], [1, "#1b212c"]],
+    };
+    const tone = kind === "storm" ? "storm" : !day ? "night" : ["clear", "partly"].includes(kind) ? "day" : "grey";
     const rays = Array.from({ length: 12 }, (_, i) =>
-      `<line x1="21" y1="8" x2="21" y2="11.5" transform="rotate(${i * 30} 21 21)"/>`
-    ).join("");
+      `<line x1="21" y1="8" x2="21" y2="11.5" transform="rotate(${i * 30} 21 21)"/>`).join("");
+    const sun = `<g stroke="#ffe27a" stroke-width="2" stroke-linecap="round">${rays}</g>
+      <circle cx="21" cy="21" r="8" fill="url(#wt-s)"/>`;
+    const moon = `<path d="M24 10a10 10 0 1 0 6 17 8 8 0 0 1-6-17z" fill="#fdf3c0" stroke="#d9c98a" stroke-width=".5"/>
+      <g fill="#fff"><circle cx="38" cy="11" r=".9"/><circle cx="45" cy="19" r=".7"/><circle cx="33" cy="22" r=".6"/></g>`;
+    const cloud = (x, y, k = 1, fill = "url(#wt-c)") => `
+      <g transform="translate(${x} ${y}) scale(${k})" fill="${fill}" stroke="rgba(40,60,80,.25)" stroke-width=".5">
+        <circle cx="8" cy="8" r="6.5"/><circle cx="16.5" cy="4.5" r="8.5"/><circle cx="25" cy="9" r="6"/>
+        <rect x="2" y="8" width="29" height="7" rx="3.5"/></g>`;
+    const lines = (color, d) => `<g stroke="${color}" stroke-width="1.6" stroke-linecap="round">${d}</g>`;
+    const rain = lines("#8fd0ff", [[11, 32], [17, 34], [23, 32], [14, 40], [20, 41]]
+      .map(([x, y]) => `<line x1="${x}" y1="${y}" x2="${x - 2}" y2="${y + 6}"/>`).join(""));
+    const snow = `<g fill="#fff">${[[10, 33], [17, 36], [24, 33], [8, 41], [15, 44], [22, 41]]
+      .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.5"/>`).join("")}</g>`;
+    const art = {
+      clear: day ? sun : moon,
+      partly: (day ? sun : moon) + cloud(14, 18, 0.9),
+      cloudy: cloud(16, 8, 0.75, "#c9d3de") + cloud(4, 14),
+      fog: cloud(4, 10) + lines("rgba(255,255,255,.85)", "<line x1='6' y1='31' x2='34' y2='31'/><line x1='9' y1='35' x2='31' y2='35'/>"),
+      rain: cloud(4, 12) + rain,
+      snow: cloud(4, 12) + snow,
+      storm: cloud(4, 10, 1, "url(#wt-d)") + rain +
+        `<path d="M21 25 L15 35 L20 35 L16 45 L27 32 L21.5 32 L25 25Z" fill="#ffd93a" stroke="#c99400" stroke-width=".6"/>`,
+    }[kind];
     return svg(`
-      <defs>${lin("wt-bg", [[0, "#6ebdf8"], [1, "#1c5fc0"]])}
-        ${rad("wt-s", [[0, "#fffbd0"], [0.6, "#ffd21f"], [1, "#f3a400"]])}</defs>
-      ${bg("wt-bg")}
-      <g stroke="#ffe27a" stroke-width="2" stroke-linecap="round">${rays}</g>
-      <circle cx="21" cy="21" r="8" fill="url(#wt-s)"/>
-      <text x="38" y="50" text-anchor="middle" fill="#fff" font-size="19" font-weight="700"
-        font-family="Helvetica Neue, Helvetica, Arial" letter-spacing="-.5">73°</text>`);
+      <defs>${lin(`wt-bg-${tone}`, bgs[tone])}
+        ${rad("wt-s", [[0, "#fffbd0"], [0.6, "#ffd21f"], [1, "#f3a400"]])}
+        ${lin("wt-c", [[0, "#ffffff"], [1, "#d8e1ea"]])}
+        ${lin("wt-d", [[0, "#8a94a3"], [1, "#4a5361"]])}</defs>
+      ${bg(`wt-bg-${tone}`)}
+      ${art}
+      <text x="40" y="51" text-anchor="middle" fill="#fff" font-size="${temp.length > 3 ? 16 : 19}" font-weight="700"
+        font-family="Helvetica Neue, Helvetica, Arial" letter-spacing="-.5">${temp}</text>`);
   },
 
   notes: () => {
