@@ -247,7 +247,7 @@ html, body {
 /* The iPhone 4s chin with its Home button */
 .chin {
   flex: none;
-  height: calc(78px + var(--sab));
+  height: calc(68px + var(--sab));
   /* centered in the chin, just clear of the home indicator however tall iOS makes the inset */
   padding-bottom: min(var(--sab), 16px);
   display: flex;
@@ -257,8 +257,8 @@ html, body {
   border-top: 1px solid #333;
 }
 .home-btn {
-  width: 54px;
-  height: 54px;
+  width: 50px;
+  height: 50px;
   padding: 0;
   border-radius: 50%;
   border: 1.5px solid #3a3a3a;
@@ -270,8 +270,8 @@ html, body {
   transition: transform .06s;
 }
 .home-btn span {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   border: 1.6px solid rgba(220, 220, 220, .75);
   border-radius: 4.5px;
 }
