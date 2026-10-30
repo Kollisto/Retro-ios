@@ -1,4 +1,5 @@
 // Default home screen layout: up to 24 icons in the grid, 4 in the dock.
+// Labels come from i18n.js in the phone's language; the names here are the fallback.
 // url is the app's deep link. Apps without one open through a Shortcut named "Retro <name>"
 // that the user creates once in the Shortcuts app (see README).
 
@@ -49,7 +50,7 @@ function render(container, apps) {
     .map((app) => `
       <a class="app" data-id="${app.id}" href="${app.url || "#"}">
         <div class="icon${app.gloss ? " gloss" : ""}">${iconSvg(app)}</div>
-        <span class="label">${app.name}</span>
+        <span class="label">${appLabel(app)}</span>
       </a>`)
     .join("");
 }
@@ -258,6 +259,8 @@ addEventListener("scroll", () => scrollTo(0, 0));
 
 // --- Long press on the wallpaper opens the wallpaper sheet ---
 
+// wallpaper sheet buttons in the phone's language
+["pick-wall", "reset-wall", "cancel-sheet"].forEach((id, i) => (document.getElementById(id).textContent = T.sheet[i]));
 const sheet = document.getElementById("sheet");
 const wallFile = document.getElementById("wall-file");
 let wallPress = null;
