@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <!-- Retro 5 runs only its own scripts and talks to nothing but the weather service. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';
+    img-src 'self' data: blob:; connect-src 'self' https://api.open-meteo.com; worker-src 'self'; manifest-src 'self';
+    object-src 'none'; base-uri 'none'; form-action 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <title>Retro 5</title>
   <meta name="apple-mobile-web-app-capable" content="yes">

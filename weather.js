@@ -19,18 +19,25 @@ function weatherKind(code) {
   return "clear";
 }
 
+// Only a rough position (about 10 km) is kept and sent: enough for the weather, not an address.
+const rough = (v) => Math.round(v * 10) / 10;
+
 function getCoords() {
   try {
     const saved = JSON.parse(localStorage.getItem(COORDS_KEY));
-    if (saved) return Promise.resolve(saved);
+    if (saved) {
+      const coords = { lat: rough(saved.lat), lon: rough(saved.lon) }; // older, finer saves get coarsened too
+      localStorage.setItem(COORDS_KEY, JSON.stringify(coords));
+      return Promise.resolve(coords);
+    }
   } catch {}
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) return reject();
     navigator.geolocation.getCurrentPosition((pos) => {
-      const coords = { lat: +pos.coords.latitude.toFixed(2), lon: +pos.coords.longitude.toFixed(2) };
+      const coords = { lat: rough(pos.coords.latitude), lon: rough(pos.coords.longitude) };
       try { localStorage.setItem(COORDS_KEY, JSON.stringify(coords)); } catch {}
       resolve(coords);
-    }, reject, { timeout: 15000, maximumAge: 3600000 });
+    }, reject, { timeout: 15000, maximumAge: 3600000, enableHighAccuracy: false });
   });
 }
 
