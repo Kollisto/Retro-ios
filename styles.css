@@ -393,10 +393,9 @@ body { position: relative; }
 
 /* icons the goose left lying around in a fury */
 .app.scattered { position: relative; z-index: 18; }
-/* in a fury the head flushes pink and sparks fly above it */
-.goose .gs-blush { opacity: 0; transition: opacity 1.2s ease; }
-.goose.fury .gs-blush { opacity: 1; }
-.goose-sparks { position: absolute; left: 0; right: 0; top: -14px; height: 20px; pointer-events: none; }
+/* in a fury the head flushes pink (faded in goose.js) and sparks fly above it */
+.goose .gs-blush { opacity: 0; }
+.goose-sparks { position: absolute; left: 0; right: 0; top: -18px; height: 20px; pointer-events: none; }
 .goose-sparks i {
   position: absolute;
   bottom: 0;
@@ -404,9 +403,12 @@ body { position: relative; }
   height: var(--size);
   clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
   filter: drop-shadow(0 0 2px rgba(255, 90, 40, .95)) drop-shadow(0 0 3px rgba(255, 210, 80, .8));
-  animation: spark .75s ease-out forwards;
+  animation: spark 1s ease-out forwards;
 }
 @keyframes spark {
   from { transform: translate(0, 0) scale(1) rotate(0); opacity: 1; }
-  to { transform: translate(var(--drift), -26px) scale(.3) rotate(90deg); opacity: 0; }
+  to { transform: translate(var(--drift), -24px) scale(.4) rotate(90deg); opacity: 0; }
 }
+
+/* fed while angry: still frowning while it walks to the food */
+.goose.grumpy .gs-brow { display: inline; }

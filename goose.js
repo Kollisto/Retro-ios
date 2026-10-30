@@ -174,10 +174,24 @@ const Goose = (() => {
     const sp = document.createElement("i");
     sp.style.left = rand(8, 56) + "px";
     sp.style.setProperty("--drift", rand(-10, 10) + "px");
-    sp.style.setProperty("--size", rand(6, 11) + "px");
+    sp.style.setProperty("--size", rand(11, 16) + "px");
     sp.style.background = Math.random() < 0.5 ? "#ffd23f" : "#ff2a1f";
     sparksEl.append(sp);
-    setTimeout(() => sp.remove(), 750);
+    setTimeout(() => sp.remove(), 1000);
+  }
+
+  // The pink flush is animated here (not with CSS transitions) so it fades smoothly
+  // whichever view - side, front or back - is showing at the moment.
+  let flushLevel = 0, blushEls = null;
+  function flush(dt) {
+    const calming = el.classList.contains("calming");
+    const target = fury ? 1 : 0;
+    const rate = fury ? 1 / 1.2 : calming ? 1 / 5 : 1 / 0.4; // per second
+    const next = flushLevel < target ? Math.min(target, flushLevel + rate * dt) : Math.max(target, flushLevel - rate * dt);
+    if (next === flushLevel) return;
+    flushLevel = next;
+    blushEls ||= el.querySelectorAll(".gs-blush");
+    blushEls.forEach((b) => (b.style.opacity = flushLevel));
   }
 
   // ---- tail ----
@@ -338,12 +352,12 @@ const Goose = (() => {
   // icons left lying around after a fury slide back to their places
   let scatteredTimer = 0;
   const scattered = new Set();
-  function restoreScattered() {
+  function restoreScattered(ms = 600) {
     clearTimeout(scatteredTimer);
     for (const a of scattered) {
-      a.style.transition = "transform .6s ease";
+      a.style.transition = `transform ${ms}ms ease-in-out`;
       a.style.transform = "";
-      setTimeout(() => { a.classList.remove("scattered"); a.style.transition = ""; }, 620);
+      setTimeout(() => { a.classList.remove("scattered"); a.style.transition = ""; }, ms + 20);
     }
     scattered.clear();
   }
@@ -375,7 +389,8 @@ const Goose = (() => {
 
   function feed() {
     if (!on) return;
-    calmDown(); // food always wins
+    const grumpy = !!angryUntil;
+    if (grumpy) soothe(); // food always wins, but an angry goose takes its time
     food?.el.remove();
     let spot;
     for (let i = 0; i < 10; i++) { // throw it somewhere away from the goose
@@ -393,10 +408,10 @@ const Goose = (() => {
     layer.append(f);
     food = { el: f, x: fx, y: fy };
     dropCarried();
-    // walk up so the beak, not the tail, ends at the crumbs
+    // walk up so the beak, not the tail, ends at the crumbs; a grumpy goose shuffles slowly
     const face = fx > x + SIZE / 2 ? 1 : -1;
     task = {
-      kind: "walk", speed: RUN,
+      kind: "walk", speed: grumpy ? WALK * 0.65 : RUN,
       tx: face > 0 ? fx - PECK_REACH : fx - (SIZE - PECK_REACH), ty: fy - PECK_DROP,
       then: () => { dir = face; eat(); },
     };
@@ -408,6 +423,7 @@ const Goose = (() => {
     if (!f) return;
     dir = f.x > x + SIZE / 2 ? 1 : -1; // turn to the food
     task = { kind: "peck", eating: f, bite: true, until: performance.now() + 6000 };
+    if (scattered.size) restoreScattered(2600); // the icons creep back while it eats
   }
 
   function bite(t, now) {
@@ -428,6 +444,7 @@ const Goose = (() => {
       setTimeout(() => f.el.remove(), 260);
       if (food === f) food = null;
       task = { kind: "stand", until: now + 900 };
+      el.classList.remove("grumpy", "fury", "calming");
       wag(); // happy goose
     }
   }
@@ -440,7 +457,8 @@ const Goose = (() => {
   const ANGER_KEY = "retro5-goose-anger";
   const ANGRY_MS = 5000, ANGRY_STEP = 10000, ANGRY_MAX = 60000, SCATTER_MS = 60000;
   const HOUR = 3600000, MINUTE = 60000;
-  let fury = false;
+  const ANGRY_POKE_MS = 5000;
+  let fury = false, angerStart = 0, angryPokes = 0;
 
   function angerDuration() {
     const now = Date.now();
@@ -457,7 +475,10 @@ const Goose = (() => {
   function enrage() {
     const ms = angerDuration();
     fury = ms >= ANGRY_MAX;
-    angryUntil = performance.now() + ms;
+    angerStart = performance.now();
+    angryPokes = 0;
+    el.classList.remove("grumpy", "calming");
+    angryUntil = angerStart + ms;
     lastAngryHonk = performance.now();
     el.classList.add("angry");
     el.classList.toggle("fury", fury);
@@ -489,11 +510,29 @@ const Goose = (() => {
     task = { kind: "fetch", target, angry: true, tx: r.left - s.left + r.width / 2 - (dir > 0 ? 50 : 14), ty: r.top - s.top - 4, speed: RUN * 1.15 };
   }
 
+  // Food calms an angry goose gradually: it frowns, its head slowly fades back to white,
+  // and the anger timer stops (icons it scattered are put back once it eats).
+  function soothe() {
+    angryUntil = 0;
+    pokes = [];
+    angryPokes = 0;
+    el.classList.remove("angry");
+    el.classList.add("grumpy");
+    dropCarried(); // in a fury this leaves the icon lying with the others
+    if (fury) {
+      clearTimeout(scatteredTimer);
+      el.classList.add("calming");
+      fury = false;
+    }
+    honk();
+  }
+
   function calmDown() {
     if (!angryUntil) return;
     angryUntil = 0;
     pokes = [];
-    el.classList.remove("angry", "fury");
+    angryPokes = 0;
+    el.classList.remove("angry", "fury", "grumpy", "calming");
     dropCarried();
     if (fury) { fury = false; scatteredTimer = setTimeout(restoreScattered, SCATTER_MS); }
     task = null;
@@ -504,7 +543,13 @@ const Goose = (() => {
     e.preventDefault();
     const now = performance.now();
     pokes = [...pokes.filter((t) => now - t < 3000), now];
-    if (angryUntil) return honk();
+    if (angryUntil) { // poking an angry goose: every 2 pokes add 5 s, up to a minute ahead
+      if (++angryPokes % 2 === 0) {
+        angryUntil = Math.min(angryUntil + ANGRY_POKE_MS, now + ANGRY_MAX);
+        if (!fury && angryUntil - angerStart >= ANGRY_MAX) { fury = true; el.classList.add("fury"); }
+      }
+      return honk();
+    }
     if (pokes.length >= 3) return enrage();
     honk();
     dropCarried();
@@ -523,7 +568,8 @@ const Goose = (() => {
   function tick(now) {
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
-    if (fury && now - lastSpark > 70) { lastSpark = now; spark(); }
+    if (fury && now - lastSpark > rand(650, 950)) { lastSpark = now; spark(); }
+    flush(dt);
     if (angryUntil) {
       if (now > angryUntil) calmDown();
       else if (now - lastAngryHonk > 1100) { lastAngryHonk = now; honk(); }
