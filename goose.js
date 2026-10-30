@@ -20,7 +20,9 @@ const Goose = (() => {
   el.className = "goose";
   // Flat, cute style: one dark outline around the whole silhouette, flat fills, dot eye.
   // Outlines are drawn first and fills on top, so joints between body and neck stay seamless.
-  const BODY = "M9 40 Q6 37 10 36 Q16 30 29 31 Q40 32 43 39 Q45 50 34 53 Q20 55 13 48 Q8 45 9 40Z";
+  const BODY = "M10 40 Q9.5 35 14.5 33.5 Q20 30.5 29 31 Q40 32 43 39 Q45 50 34 53 Q20 55 13.5 48.5 Q9.5 45 10 40Z";
+  const TAIL = "M15 37 Q7 31 4.2 34.2 Q4.2 39.8 13.5 44Z"; // side view, pointing up and back
+  const BACK_TAIL = "M27.5 46.5 Q30.2 52.5 32 56.5 Q33.8 52.5 36.5 46.5Z";
   const NECK = "M31.5 41 Q35.5 28 36.8 19 Q38 9.5 45 9.5 Q51.5 9.5 51.5 16 Q51.5 21 47 24 Q44 31 41 45 L34 46Z";
   const INK = "#1d1d1d", WHITE = "#f6f2ee", ORANGE = "#ef5a24";
   // outline copy underneath, fill copy on top
@@ -44,8 +46,10 @@ const Goose = (() => {
       ${shadow}
       ${legs(sideLeg, 24, 32)}
       ${outline(BODY)}
+      <g class="gs-tail">${outline(TAIL)}</g>
       <g class="gs-neck">${outline(NECK)}</g>
       ${fill(BODY)}
+      <g class="gs-tail">${fill(TAIL)}</g>
       <g class="gs-neck">
         ${fill(NECK)}
         <g class="gs-beak" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round" fill="${ORANGE}">
@@ -69,8 +73,8 @@ const Goose = (() => {
     <svg class="gs-view view-back" viewBox="0 0 64 64">
       ${shadow}
       ${legs(frontLeg, 26, 38)}
-      ${outline(EGG)}${outline(NECK_UP)}${outline("M28 47.5 Q32 55 36 47.5Z")}
-      ${fill(EGG)}${fill(NECK_UP)}${fill("M28 47.5 Q32 55 36 47.5Z")}
+      ${outline(EGG)}${outline(NECK_UP)}<g class="gs-tail gs-tail-back">${outline(BACK_TAIL)}</g>
+      ${fill(EGG)}${fill(NECK_UP)}<g class="gs-tail gs-tail-back">${fill(BACK_TAIL)}</g>
       <path d="M24.5 31 Q21.5 41 29.5 48 M39.5 31 Q42.5 41 34.5 48" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>
     </svg>`;
 
@@ -154,6 +158,13 @@ const Goose = (() => {
     setTimeout(() => el.classList.remove("honking"), 380);
   }
 
+  // ---- tail ----
+  function wag() {
+    el.classList.remove("wagging");
+    void el.offsetWidth; // restart the animation
+    el.classList.add("wagging");
+  }
+
   // ---- walking ----
   // The stride is driven by the distance covered, so the planted foot stays still on the ground
   // while the body passes over it (no sliding), and faster movement means quicker, longer steps.
@@ -231,7 +242,8 @@ const Goose = (() => {
     if (!editing && now - lastCarry > 40000 && r < 0.14) return startCarry();
     if (now - lastNote > 60000 && r < 0.24) return startNote();
     if (r < 0.45) return (task = { kind: "peck", until: now + rand(1200, 2600) });
-    if (r < 0.52) return (task = { kind: "stand", until: now + rand(800, 2000) });
+    if (r < 0.52) { if (Math.random() < 0.6) wag(); return (task = { kind: "stand", until: now + rand(800, 2000) }); }
+    if (Math.random() < 0.2) wag(); // now and then on the way somewhere
     const s = randomSpot();
     task = { kind: "walk", tx: s.x, ty: s.y, speed: WALK };
   }
@@ -325,14 +337,34 @@ const Goose = (() => {
     };
   }
 
+  // Eating: each crumb disappears when the beak actually reaches it on a peck.
   function eat() {
     const f = food;
     if (!f) return;
     dir = f.x > x + SIZE / 2 ? 1 : -1; // turn to the food
-    task = { kind: "peck", until: performance.now() + 1800 };
-    const crumbs = [...f.el.children];
-    crumbs.forEach((c, i) => setTimeout(() => c.classList.add("eaten"), 350 + i * 360));
-    setTimeout(() => { f.el.remove(); if (food === f) food = null; }, 1900);
+    task = { kind: "peck", eating: f, bite: true, until: performance.now() + 6000 };
+  }
+
+  function bite(t, now) {
+    const f = t.eating;
+    const crumbs = [...f.el.children].filter((c) => !c.classList.contains("eaten"));
+    const beak = el.querySelector(".view-side .gs-beak-top").getBoundingClientRect();
+    const tipX = dir > 0 ? beak.right : beak.left, tipY = beak.bottom;
+    const near = (c) => { const r = c.getBoundingClientRect(); return { c, r, d: Math.abs(r.left + r.width / 2 - tipX) }; };
+    const lowest = Math.min(...crumbs.map((c) => c.getBoundingClientRect().top));
+    if (!t.bite && tipY < lowest - 6) t.bite = true; // the head came back up: ready for the next peck
+    let bitten = 0;
+    if (t.bite && crumbs.length) {
+      const hit = crumbs.map(near).filter((n) => n.d < 14 && tipY >= n.r.top - 2).sort((a, b) => a.d - b.d)[0];
+      if (hit) { hit.c.classList.add("eaten"); t.bite = false; bitten = 1; }
+    }
+    const left = crumbs.length - bitten;
+    if (left <= 0 || now > t.until) {
+      setTimeout(() => f.el.remove(), 260);
+      if (food === f) food = null;
+      task = { kind: "stand", until: now + 900 };
+      wag(); // happy goose
+    }
   }
 
   // ---- anger: three pokes within three seconds ----
@@ -430,7 +462,8 @@ const Goose = (() => {
       stride(0, 0, 0);
       if (task.kind === "peck") view = "side"; // pecking is drawn from the side
       setPose(task.kind === "peck" ? "peck" : "stand");
-      if (now > task.until) task = null;
+      if (task.eating) bite(task, now);
+      else if (now > task.until) task = null;
     }
     place();
     raf = requestAnimationFrame(tick);

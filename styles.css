@@ -376,3 +376,19 @@ body { position: relative; }
 .goose.angry .gs-brow { display: inline; }
 .goose.angry .gs-view { animation: fume .16s linear infinite; }
 @keyframes fume { 0%, 100% { rotate: -3deg; } 50% { rotate: 3deg; } }
+
+/* tail wag: a quick shake of the tail tuft */
+.gs-tail { transform-origin: 13.5px 40px; }
+.gs-tail-back { transform-origin: 32px 47px; }
+.goose.wagging .gs-tail { animation: wag .9s ease-in-out; }
+.goose.wagging .gs-tail-back { animation-name: wag-back; }
+@keyframes wag {
+  0%, 100% { transform: rotate(0); }
+  12% { transform: rotate(18deg); } 26% { transform: rotate(-12deg); } 40% { transform: rotate(16deg); }
+  54% { transform: rotate(-10deg); } 68% { transform: rotate(10deg); } 82% { transform: rotate(-5deg); }
+}
+@keyframes wag-back {
+  0%, 100% { transform: rotate(0); }
+  12% { transform: rotate(-22deg); } 26% { transform: rotate(22deg); } 40% { transform: rotate(-18deg); }
+  54% { transform: rotate(18deg); } 68% { transform: rotate(-10deg); } 82% { transform: rotate(8deg); }
+}
