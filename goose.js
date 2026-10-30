@@ -55,6 +55,52 @@ const Goose = (() => {
   const blushGrad = (id) => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#ff6f93"/><stop offset=".38" stop-color="#ff9bb3"/><stop offset=".75" stop-color="#ffc4d2" stop-opacity="0"/></linearGradient></defs>`;
   const blush = (d, id) => `<path class="gs-blush" d="${d}" fill="url(#${id})"/>`;
+
+  // ---- Halloween costume (24 October - 1 November): a Dracula cape, black outside and
+  // blood-red inside, with a stand-up collar, a jewel clasp and two little white fangs ----
+  const CAPE = "#2a2830", SHEEN = "#45434e", RED = "#a3121f", RED_D = "#6f0912";
+  const cst = `stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"`;
+  const mirrorX = (d) => d.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, (m, px, py) => `${+(64 - px).toFixed(2)} ${py}`);
+  // a pointed bat-wing hem through the points xs (at y = py), scalloped up to y = sy between them
+  const hem = (xs, py, sy) => xs.slice(1).map((px, i) => `Q${((xs[i] + px) / 2).toFixed(1)} ${sy} ${px} ${py}`).join(" ");
+  const costume = (inner) => `<g class="gs-costume">${inner}</g>`;
+  const SIDE_COLLAR = costume(`<path d="M35.2 30 L28.6 16.4 Q33.8 19 37.8 24.4Z" fill="${CAPE}" ${cst}/>
+      <path d="M35.6 28.4 L31 19.6 Q34.4 21.6 36.9 25.2Z" fill="${RED}"/>`);
+  const SIDE_CAPE = costume(`<g class="gs-cape-side">
+      <path class="gs-cape-under" d="M2.4 37 Q2 45 3.6 54.4 ${hem([3.6, 12.6, 21.8, 30.4], 54.4, 50)} L33 44Z" fill="${RED_D}" ${cst}/>
+      <path d="M37 26.6 Q27 27.6 16.6 29.4 Q5.6 30.6 1.8 35.6 Q2.6 44 3.4 50.8 ${hem([3.4, 12.6, 21.8, 30.6], 52.8, 48.4)} Q33.6 41 38.8 28.6Z" fill="${CAPE}" ${cst}/>
+      <path d="M38.8 28.6 Q33.4 40 30.6 52.8 L27.8 51.4 Q30.8 39.6 36.4 28.2Z" fill="${RED}" ${cst}/>
+      <path d="M19 32.4 Q15 41 16.6 51.2 M10 35 Q7.6 42 8 49.6" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/></g>`);
+  const SIDE_CLASP = costume(`<path d="M35 26.4 Q40.5 28.4 45.6 28.6" fill="none" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="45" cy="28.6" r="1.5" fill="${RED}" stroke="${INK}" stroke-width="0.9"/>`);
+  const SIDE_FANG = costume(`<path d="M54.3 16.9 L55.1 20.4 L56.1 16.8Z" fill="#fff" stroke="${INK}" stroke-width="0.7"/>`);
+  const F_COLLAR = "M27 27.5 L15.6 12 Q22.4 14.6 27.2 19.4Z", F_COLLAR_IN = "M26.4 25.4 L18.6 14.6 Q23 16.6 26.6 20.4Z";
+  const F_PANEL = `M27.2 25.6 Q17 26.4 14.4 34 Q12.6 42 12.4 51.6 ${hem([12.4, 17, 21.4], 53.4, 49.6)} Q19.4 38 27.2 27Z`;
+  const F_LINING = "M27.2 27 Q19.4 38 21.4 53.4 L24.2 52 Q22.6 39 27.6 29.2Z";
+  const F_UNDER = "M14.4 34 Q11.6 43 11 54.6 Q14 51 16.4 54.8 Q18.2 51.2 21 54.6 L20 44Z";
+  const COLLAR_FRONT = costume(`<path d="${F_COLLAR}" fill="${CAPE}" ${cst}/><path d="${mirrorX(F_COLLAR)}" fill="${CAPE}" ${cst}/>
+      <path d="${F_COLLAR_IN}" fill="${RED}"/><path d="${mirrorX(F_COLLAR_IN)}" fill="${RED}"/>`);
+  const panel = (m) => `<path d="${m(F_UNDER)}" fill="${RED_D}" ${cst}/><path d="${m(F_PANEL)}" fill="${CAPE}" ${cst}/>
+      <path d="${m(F_LINING)}" fill="${RED}" ${cst}/><path d="${m("M17.6 31 Q15.4 40 16.4 50.4")}" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/>`;
+  // wrapped up to the eyes, lurking ...
+  const WRAP = `M12.6 36 Q13.6 22 22.5 16.2 Q27.5 13 32.5 13.2 Q41.5 14 47.8 21.8 Q51.2 30 51.6 53.4 ${hem([51.6, 41.8, 32, 22.2, 12.4], 53.4, 49.6)}Z`;
+  // ... and the wings flung open
+  const WING = "M27 25 Q14 11 0.5 15 Q6.5 22.5 3.5 30.5 Q10.5 34 9 41.5 Q15.5 43.5 16.5 50.5 Q20 47 22 44 Q22 33 27 27Z";
+  const FRONT_CAPE = costume(`<g class="gs-cape-panels"><g class="gs-cape-l">${panel((d) => d)}</g><g class="gs-cape-r">${panel(mirrorX)}</g></g>
+      <path d="M26.8 27.4 Q32 29.6 37.2 27.4" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="32" cy="28.7" r="1.6" fill="${RED}" stroke="${INK}" stroke-width="0.9"/>
+      <g class="gs-cape-spread">${[(d) => d, mirrorX].map((m) => `<path d="${m(WING)}" fill="${RED}" ${cst}/>
+        <path d="${m("M27 25 Q14 11 0.5 15 Q14 14.6 26.8 28.6Z")}" fill="${CAPE}" ${cst}/>
+        <path d="${m("M26 27 L3.5 30.5 M26 27.5 L9 41.5 M25.6 29 L16.5 50.5")}" stroke="${RED_D}" stroke-width="1" stroke-linecap="round"/>`).join("")}</g>`);
+  const FRONT_WRAP = costume(`<g class="gs-cape-wrap"><path d="${WRAP}" fill="${CAPE}" ${cst}/>
+      <path d="M22.5 16.2 Q27.5 13 32.5 13.2 Q41.5 14 47.8 21.8 L46.4 23.6 Q40.6 17.2 32.4 16.4 Q27.6 16.1 23.6 18.2Z" fill="${RED}" ${cst}/>
+      <path d="M18 25 Q24 36 21.8 50 M42.6 22 Q38.4 35 41.4 50" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/></g>`);
+  const FRONT_FANGS = costume(`<path class="gs-fangs-front" d="M30.2 17.4 L31 20.9 L31.9 17.8Z M33.8 17.4 L33 20.9 L32.1 17.8Z" fill="#fff" stroke="${INK}" stroke-width="0.7"/>`);
+  const BACK_CAPE = costume(`<path d="${F_COLLAR}" fill="${CAPE}" ${cst}/><path d="${mirrorX(F_COLLAR)}" fill="${CAPE}" ${cst}/>
+      <path d="M26.8 19.6 L24.6 17.6 M37.2 19.6 L39.4 17.6" stroke="${RED}" stroke-width="1.2" stroke-linecap="round"/>
+      <g class="gs-cape-back"><path d="M26.8 25.4 Q16.4 26 14 34 Q12.4 43 12.2 51.6 ${hem([12.2, 22.1, 32, 41.9, 51.8], 53.6, 49.8)} Q51.6 43 50 34 Q47.6 26 37.2 25.4Z" fill="${CAPE}" ${cst}/>
+      <path d="M27 28 Q22.6 40 22.1 53 M37 28 Q41.4 40 41.9 53 M32 29 L32 52.6" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/></g>
+      <path d="M26.6 25.6 Q32 27.4 37.4 25.6" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/>`);
   el.innerHTML = `
     <div class="goose-shadow"></div>
     <div class="goose-sparks"></div>
@@ -63,13 +109,15 @@ const Goose = (() => {
       ${legs(sideLeg, 24, 32)}
       ${outline(BODY)}
       <g class="gs-tail">${outline(TAIL)}</g>
-      <g class="gs-neck">${outline(NECK)}</g>
+      <g class="gs-neck">${SIDE_COLLAR}${outline(NECK)}</g>
       ${fill(BODY)}
       <g class="gs-tail">${fill(TAIL)}</g>
+      ${SIDE_CAPE}
       <g class="gs-neck">
-        ${fill(NECK)}${blush(NECK, "gs-pink-s")}
+        ${fill(NECK)}${blush(NECK, "gs-pink-s")}${SIDE_CLASP}
         <g class="gs-beak" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round" fill="${ORANGE}">
           <path class="gs-beak-bottom" d="M50.5 16.5 Q55 16.5 57 17.6 Q54.5 19.6 50 19.2Z"/>
+          ${SIDE_FANG}
           <path class="gs-beak-top" d="M50 12.4 Q56 12 59 14.6 Q56.5 17.4 50.2 17.6Z"/>
         </g>
         <circle class="gs-eye" cx="46" cy="14.6" r="1.25" fill="${INK}"/>
@@ -78,19 +126,21 @@ const Goose = (() => {
       </g>
     </svg>
     <svg class="gs-view view-front" viewBox="0 0 64 64">${blushGrad("gs-pink-f")}
-      ${legs(frontLeg, 26, 38)}
+      ${legs(frontLeg, 26, 38)}${COLLAR_FRONT}
       ${outline(EGG)}${outline(NECK_UP)}${fill(EGG)}${fill(NECK_UP)}${blush(NECK_UP, "gs-pink-f")}
-      <path d="M19.5 36 Q20.5 44 26 48 M44.5 36 Q43.5 44 38 48" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>
+      <path d="M19.5 36 Q20.5 44 26 48 M44.5 36 Q43.5 44 38 48" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>${FRONT_CAPE}
       <circle cx="29.2" cy="11.2" r="1.15" fill="${INK}"/><circle cx="34.8" cy="11.2" r="1.15" fill="${INK}"/>
       <ellipse class="gs-mouth" cx="32" cy="17.6" rx="2.2" ry="2.6" fill="#7a1d0a" stroke="${INK}" stroke-width="1.2"/>
+      ${FRONT_FANGS}
       <path class="gs-beak-front" d="M28.8 14 Q32 12.8 35.2 14 Q34.2 18.6 32 19.2 Q29.8 18.6 28.8 14Z" fill="${ORANGE}" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>
+      ${FRONT_WRAP}
       <path class="gs-brow" d="M26.8 8.2 L30.6 9.6 M37.2 8.2 L33.4 9.6" stroke="${INK}" stroke-width="1.5" stroke-linecap="round"/>
     </svg>
     <svg class="gs-view view-back" viewBox="0 0 64 64">${blushGrad("gs-pink-b")}
       ${legs(frontLeg, 26, 38)}
       ${outline(EGG)}${outline(NECK_UP)}<g class="gs-tail gs-tail-back">${outline(BACK_TAIL)}</g>
       ${fill(EGG)}${fill(NECK_UP)}${blush(NECK_UP, "gs-pink-b")}<g class="gs-tail gs-tail-back">${fill(BACK_TAIL)}</g>
-      <path d="M24.5 31 Q21.5 41 29.5 48 M39.5 31 Q42.5 41 34.5 48" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>
+      <path d="M24.5 31 Q21.5 41 29.5 48 M39.5 31 Q42.5 41 34.5 48" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>${BACK_CAPE}
     </svg>`;
 
   let on = false, raf = 0, last = 0;
@@ -381,7 +431,14 @@ const Goose = (() => {
   }
 
   function snooze(now) {
-    if (now - lastZ > 1400) {
+    if (halloween) {
+      if (!zzzEl.querySelector(".goose-bat")) {
+        const bat = document.createElement("i");
+        bat.className = "goose-bat";
+        bat.innerHTML = BAT;
+        zzzEl.append(bat);
+      }
+    } else if (now - lastZ > 1400) {
       lastZ = now;
       const z = document.createElement("i");
       z.textContent = "z";
@@ -562,6 +619,107 @@ const Goose = (() => {
     setTimeout(() => d.remove(), 650);
   }
 
+
+  // ---- Halloween (24 October - 1 November) ----
+  // The goose wears its Dracula cape. The cape streams out behind it as it goes, and now and then
+  // it wraps itself up to the eyes, lurks ... and flings the cape open with a scream. At night a
+  // little bat flutters over the sleeping goose instead of the z's. ?halloween shows it any day.
+  const isHalloween = () => {
+    const d = new Date(), m = d.getMonth(), day = d.getDate();
+    return (m === 9 && day >= 24) || (m === 10 && day === 1) || /[?&]halloween\b/.test(location.search);
+  };
+  let halloween = false, lastSeasonCheck = -Infinity, flap = 0, lastLurk = performance.now(), spooky = false;
+  const LURK_GAP = 45000;
+
+  function checkSeason(now) {
+    if (now - lastSeasonCheck < 60000) return;
+    lastSeasonCheck = now;
+    halloween = isHalloween();
+    el.classList.toggle("halloween", halloween);
+  }
+
+  // the cape streams out with speed and ripples a little
+  function capeFlap(dt, now) {
+    if (!halloween) return;
+    const moving = el.classList.contains("walking");
+    const target = moving ? Math.min(1, curSpeed / 110) : 0;
+    flap += (target - flap) * Math.min(1, dt * 5);
+    const ripple = flap > 0.02 ? Math.sin(now / 75) * 0.12 * flap : 0;
+    el.style.setProperty("--flap", (flap + ripple).toFixed(3));
+  }
+
+  function lurk() {
+    lastLurk = performance.now();
+    spooky = true;
+    el.classList.add("lurking");
+    task = { kind: "stand", face: "front", spooky: true, until: lastLurk + rand(2200, 3600), then: scare };
+  }
+
+  function scare() {
+    const now = performance.now();
+    spooky = true;
+    el.classList.remove("lurking");
+    el.classList.add("scaring");
+    scream();
+    // the icons nearby jump with fright
+    const s = screenEl.getBoundingClientRect(), cx = s.left + x + SIZE / 2, cy = s.top + y + SIZE / 2;
+    document.querySelectorAll(".app:not(.carried)").forEach((a) => {
+      const r = a.getBoundingClientRect();
+      if (Math.hypot(r.left + r.width / 2 - cx, r.top + r.height / 2 - cy) > 150) return;
+      a.classList.remove("spooked");
+      void a.offsetWidth;
+      a.classList.add("spooked");
+      setTimeout(() => a.classList.remove("spooked"), 700);
+    });
+    task = { kind: "stand", face: "front", spooky: true, until: now + 1500, then: () => { unspook(); wag(); } };
+  }
+
+  function unspook() {
+    spooky = false;
+    el.classList.remove("lurking", "scaring");
+  }
+
+  // "AAAAA!": a long, wobbling, rising and falling goose scream
+  function scream() {
+    try {
+      if (navigator.audioSession) navigator.audioSession.type = "ambient";
+      audio ||= new (window.AudioContext || window.webkitAudioContext)();
+      const t = audio.currentTime, dur = 0.95;
+      const osc = audio.createOscillator();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(300, t);
+      osc.frequency.exponentialRampToValueAtTime(470, t + 0.18);
+      osc.frequency.exponentialRampToValueAtTime(420, t + 0.6);
+      osc.frequency.exponentialRampToValueAtTime(260, t + dur);
+      const tremble = audio.createOscillator(), depth = audio.createGain();
+      tremble.frequency.value = 9;
+      depth.gain.value = 22;
+      tremble.connect(depth).connect(osc.frequency);
+      const formant = audio.createBiquadFilter();
+      formant.type = "bandpass";
+      formant.frequency.value = 900;
+      formant.Q.value = 2.5;
+      const gain = audio.createGain();
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.85, t + 0.04);
+      gain.gain.setValueAtTime(0.85, t + 0.6);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(formant).connect(gain).connect(audio.destination);
+      osc.start(t);
+      tremble.start(t);
+      osc.stop(t + dur + 0.02);
+      tremble.stop(t + dur + 0.02);
+    } catch {}
+    el.classList.add("honking"); // beak wide open, fangs out
+    clearTimeout(honkTimer);
+    honkTimer = setTimeout(() => el.classList.remove("honking"), 1000);
+  }
+
+  const BAT = `<svg viewBox="0 0 24 12" width="24" height="12">
+      <g class="bat-wing"><path d="M12 6 Q8 1 1 2 Q3 4 2.5 6.5 Q5 5.6 6 8 Q8 6.4 9.5 8.5Z"/><path d="M12 6 Q16 1 23 2 Q21 4 21.5 6.5 Q19 5.6 18 8 Q16 6.4 14.5 8.5Z"/></g>
+      <path d="M10.4 4.2 L10.6 2.4 L11.6 3.6 L12.4 3.6 L13.4 2.4 L13.6 4.2 Q14.4 6 13.6 8.2 Q12 10 10.4 8.2 Q9.6 6 10.4 4.2Z"/>
+      <circle cx="11.3" cy="5" r=".55" fill="#ff3b30"/><circle cx="12.7" cy="5" r=".55" fill="#ff3b30"/></svg>`;
+
   // ---- things the goose does ----
   function nextTask() {
     dropCarried(); // whatever happened, an icon never stays in the beak between tasks
@@ -574,6 +732,7 @@ const Goose = (() => {
     if (!editing && now - lastPuddle > puddleGap && r < (raining() ? 0.3 : 0.1)) return goSplash();
     const fav = favourite();
     if (!editing && fav && now - lastGuard > 60000 && r > 0.9 && guard(fav)) return;
+    if (halloween && !editing && now - lastLurk > LURK_GAP && r > 0.8 && r < 0.9) return lurk();
     if (!editing && now - lastCarry > 40000 && r < 0.14) return startCarry();
     if (now - lastNote > 60000 && r < 0.24) return startNote();
     if (r < 0.45) return (task = { kind: "peck", until: now + rand(1200, 2600) });
@@ -850,6 +1009,7 @@ const Goose = (() => {
     lastInteraction = now;
     pokes = [...pokes.filter((t) => now - t < 3000), now];
     if (sleeping) return wakeUp("poke");
+    if (el.classList.contains("lurking")) return scare(); // caught it lurking: it jumps out at you
     if (angryUntil) { // poking an angry goose: every 2 pokes add 5 s, up to a minute ahead
       if (++angryPokes % 2 === 0 && pokeBonus < POKE_BONUS_MAX) {
         pokeBonus += ANGRY_POKE_MS;
@@ -876,6 +1036,8 @@ const Goose = (() => {
   function tick(now) {
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
+    checkSeason(now);
+    if (spooky && !task?.spooky) unspook(); // interrupted: food, anger, a poke
     if (fury && now - lastSpark > rand(650, 950)) { lastSpark = now; spark(); }
     if ((angryUntil || scattered.size) && now - lastMoodSave > 1000) saveMood();
     flush(dt);
@@ -940,6 +1102,7 @@ const Goose = (() => {
       if (task.eating) bite(task, now);
       else if (task.until && now > task.until) { const done = task; task = null; done.then?.(); }
     }
+    capeFlap(dt, now);
     place();
     raf = requestAnimationFrame(tick);
   }
@@ -1017,6 +1180,8 @@ const Goose = (() => {
       x = s.x;
       y = s.y;
     }
+    lastSeasonCheck = -Infinity;
+    checkSeason(performance.now());
     layer.append(el);
     last = performance.now();
     raf = requestAnimationFrame(tick);
