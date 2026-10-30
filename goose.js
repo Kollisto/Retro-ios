@@ -721,6 +721,99 @@ const Goose = (() => {
       <path d="M10.4 4.2 L10.6 2.4 L11.6 3.6 L12.4 3.6 L13.4 2.4 L13.6 4.2 Q14.4 6 13.6 8.2 Q12 10 10.4 8.2 Q9.6 6 10.4 4.2Z"/>
       <circle cx="11.3" cy="5" r=".55" fill="#ff3b30"/><circle cx="12.7" cy="5" r=".55" fill="#ff3b30"/></svg>`;
 
+  // A flock of 3-5 bats appears somewhere on the screen. The goose runs over, then dashes about
+  // with them flapping around it for a couple of seconds, and they vanish in a puff of smoke.
+  const BATS_GAP = 60000, BAT_PLAY_MS = 2600;
+  let bats = [], lastBats = performance.now() - BATS_GAP + 15000, batPlayUntil = 0;
+
+  function batParty() {
+    lastBats = performance.now();
+    const s = randomSpot(), n = 3 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < n; i++) {
+      const b = document.createElement("i");
+      b.className = "goose-flybat";
+      b.innerHTML = BAT;
+      layer.append(b);
+      const hx = s.x + SIZE / 2 + rand(-34, 34), hy = s.y + rand(-6, 34);
+      bats.push({ el: b, hx, hy, x: hx, y: hy, ph: rand(0, Math.PI * 2), r: rand(22, 38), follow: false });
+    }
+    honk(1.1);
+    task = { kind: "walk", bats: true, tx: s.x, ty: s.y, speed: RUN, then: () => {
+      bats.forEach((b) => (b.follow = true));
+      batPlayUntil = performance.now() + BAT_PLAY_MS;
+      wag();
+      honk(1.05);
+      batDash();
+    } };
+  }
+
+  // short happy dashes back and forth, the bats circling along
+  function batDash() {
+    if (performance.now() > batPlayUntil) { poofBats(); task = { kind: "stand", until: performance.now() + 600 }; return; }
+    const b = box();
+    task = { kind: "walk", bats: true, speed: RUN,
+      tx: Math.min(Math.max(x + rand(-110, 110), b.left), b.right),
+      ty: Math.min(Math.max(y + rand(-70, 70), b.top), b.bottom - SIZE),
+      then: batDash };
+  }
+
+  function moveBats(dt, now) {
+    if (!bats.length) return;
+    if (!task?.bats) return poofBats(); // food, a poke or anger: the bats are gone
+    const k = Math.min(1, dt * 7);
+    for (const b of bats) {
+      let tx, ty;
+      if (b.follow) { // circling the goose
+        const a = now / 230 + b.ph;
+        tx = x + SIZE / 2 + Math.cos(a) * b.r;
+        ty = y + 10 + Math.sin(a) * b.r * 0.45 + Math.sin(now / 90 + b.ph) * 3;
+      } else { // hovering where they appeared
+        tx = b.hx + Math.sin(now / 420 + b.ph) * 9;
+        ty = b.hy + Math.cos(now / 330 + b.ph) * 6;
+      }
+      b.x += (tx - b.x) * k;
+      b.y += (ty - b.y) * k;
+      b.el.style.transform = `translate(${b.x - 15}px, ${b.y - 8}px) scaleX(${tx < b.x ? -1 : 1})`;
+    }
+  }
+
+  function poofBats() {
+    for (const b of bats) {
+      const p = document.createElement("div");
+      p.className = "goose-puff";
+      p.style.transform = `translate(${b.x - 20}px, ${b.y - 20}px)`;
+      p.innerHTML = "<i></i>".repeat(6);
+      layer.append(p);
+      setTimeout(() => p.remove(), 800);
+      b.el.remove();
+    }
+    if (bats.length) puff();
+    bats = [];
+  }
+
+  // a soft "pffff": a short burst of filtered noise
+  function puff() {
+    try {
+      audio ||= new (window.AudioContext || window.webkitAudioContext)();
+      const t = audio.currentTime, dur = 0.45;
+      const buf = audio.createBuffer(1, Math.floor(audio.sampleRate * dur), audio.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const src = audio.createBufferSource();
+      src.buffer = buf;
+      const lp = audio.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.setValueAtTime(2400, t);
+      lp.frequency.exponentialRampToValueAtTime(500, t + dur);
+      const gain = audio.createGain();
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.35, t + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(lp).connect(gain).connect(audio.destination);
+      src.start(t);
+    } catch {}
+  }
+
   // ---- things the goose does ----
   function nextTask() {
     dropCarried(); // whatever happened, an icon never stays in the beak between tasks
@@ -734,6 +827,7 @@ const Goose = (() => {
     const fav = favourite();
     if (!editing && fav && now - lastGuard > 60000 && r > 0.9 && guard(fav)) return;
     if (halloween && !editing && now - lastLurk > LURK_GAP && r > 0.8 && r < 0.9) return lurk();
+    if (halloween && !editing && now - lastBats > BATS_GAP && r >= 0.6 && r < 0.75) return batParty();
     if (!editing && now - lastCarry > 40000 && r < 0.14) return startCarry();
     if (now - lastNote > 60000 && r < 0.24) return startNote();
     if (r < 0.45) return (task = { kind: "peck", until: now + rand(1200, 2600) });
@@ -813,7 +907,9 @@ const Goose = (() => {
     if (layer.querySelectorAll(".goose-note").length >= 2) return nextTask();
     const n = document.createElement("div");
     n.className = "goose-note";
-    n.textContent = NOTES[Math.floor(Math.random() * NOTES.length)];
+    // in the Halloween season spooky phrases come first; never outside it
+    const pool = halloween && Math.random() < 0.75 ? T.halloweenNotes || NOTES : NOTES;
+    n.textContent = pool[Math.floor(Math.random() * pool.length)];
     n.style.left = Math.min(Math.max(x - 10, 8), box().right - 30) + "px";
     n.style.top = y + 30 + "px";
     n.style.setProperty("--tilt", rand(-9, 9) + "deg");
@@ -1104,6 +1200,7 @@ const Goose = (() => {
       else if (task.until && now > task.until) { const done = task; task = null; done.then?.(); }
     }
     capeFlap(dt, now);
+    moveBats(dt, now);
     place();
     raf = requestAnimationFrame(tick);
   }
@@ -1207,6 +1304,8 @@ const Goose = (() => {
     if (puddle) { puddle.el.remove(); puddle = null; }
     el.remove();
     layer.querySelectorAll(".goose-note").forEach((n) => n.remove());
+    bats.forEach((b) => b.el.remove());
+    bats = [];
   }
 
   el.addEventListener("pointerdown", (e) => e.stopPropagation());

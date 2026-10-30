@@ -550,3 +550,26 @@ body { position: relative; }
   50% { transform: translate(2px, -20px); }
   75% { transform: translate(-16px, -10px); }
 }
+/* a flock of bats to play with, and the puff of smoke they vanish in */
+.goose-flybat { position: absolute; left: 0; top: 0; pointer-events: none; animation: bat-in .4s ease-out; }
+.goose-flybat svg { display: block; width: 30px; height: 15px; fill: #23212a; overflow: visible; filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff); }
+.goose-flybat .bat-wing { transform-origin: 12px 6px; animation: bat-flap .15s ease-in-out infinite alternate; }
+@keyframes bat-in { from { opacity: 0; scale: .3; } }
+.goose-puff { position: absolute; left: 0; top: 0; width: 40px; height: 40px; pointer-events: none; }
+.goose-puff i {
+  position: absolute; left: 9px; top: 9px; width: 22px; height: 22px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #fff, #e2dfe6 55%, #b9b4c2);
+  box-shadow: 0 0 2px rgba(0, 0, 0, .25);
+  animation: puff .8s ease-out forwards;
+}
+.goose-puff i:nth-child(1) { --px: -15px; --py: -6px; }
+.goose-puff i:nth-child(2) { --px: 14px; --py: -10px; animation-delay: .04s; }
+.goose-puff i:nth-child(3) { --px: -9px; --py: 12px; animation-delay: .08s; }
+.goose-puff i:nth-child(4) { --px: 15px; --py: 9px; animation-delay: .02s; }
+.goose-puff i:nth-child(5) { --px: 0px; --py: -16px; animation-delay: .06s; }
+.goose-puff i:nth-child(6) { --px: 0px; --py: 2px; animation-delay: 0s; }
+@keyframes puff {
+  0% { transform: translate(0, 0) scale(.3); opacity: .95; }
+  45% { opacity: .9; }
+  100% { transform: translate(var(--px), calc(var(--py) - 12px)) scale(2); opacity: 0; }
+}

@@ -10,6 +10,7 @@ const LANGS = {
     sheet: ["Choose Wallpaper from Photos", "Default Wallpaper", "Cancel"],
     tooBig: "Couldn't save the wallpaper: the picture is too large.",
     gooseNotes: ["The goose was here", "Go to sleep", "Honk!", "Drink some water", "I ate your bread", "Don't touch me", "Out of bread"],
+    halloweenNotes: ["Trick or treat!", "I came for your blood. And bread", "I'm not a goose. I'm a vampire", "Boo!", "Don't turn off the lights"],
   },
   ru: {
     apps: { messages: "Сообщения", calendar: "Календарь", photos: "Фото", camera: "Камера", maps: "Карты",
@@ -19,6 +20,7 @@ const LANGS = {
     sheet: ["Выбрать обои из Фото", "Стандартные обои", "Отменить"],
     tooBig: "Не удалось сохранить обои: картинка слишком большая.",
     gooseNotes: ["Гусь был здесь", "Иди спать", "Га-га!", "Попей воды", "Я съел твой хлеб", "Не трогай меня", "Хлеб кончился"],
+    halloweenNotes: ["Сладость или гадость!", "Я пришёл за твоей кровью. И за хлебом", "Я не гусь. Я вампир", "Бу!", "Не выключай свет"],
   },
   uk: {
     apps: { messages: "Повідомлення", calendar: "Календар", photos: "Фото", camera: "Камера", maps: "Карти",
@@ -28,6 +30,7 @@ const LANGS = {
     sheet: ["Вибрати шпалери з Фото", "Стандартні шпалери", "Скасувати"],
     tooBig: "Не вдалося зберегти шпалери: зображення завелике.",
     gooseNotes: ["Тут був гусак", "Іди спати", "Ґа-ґа!", "Попий води", "Я з'їв твій хліб", "Не чіпай мене", "Хліб скінчився"],
+    halloweenNotes: ["Солодощі або капость!", "Я прийшов по твою кров. І по хліб", "Я не гусак. Я вампір", "Бу!", "Не вимикай світло"],
   },
   de: {
     apps: { messages: "Nachrichten", calendar: "Kalender", photos: "Fotos", camera: "Kamera", maps: "Karten",
@@ -37,6 +40,7 @@ const LANGS = {
     sheet: ["Hintergrund aus Fotos", "Standardhintergrund", "Abbrechen"],
     tooBig: "Hintergrund konnte nicht gesichert werden: das Bild ist zu groß.",
     gooseNotes: ["Die Gans war hier", "Geh schlafen", "Schnatter!", "Trink Wasser", "Ich hab dein Brot gegessen", "Fass mich nicht an", "Brot ist alle"],
+    halloweenNotes: ["Süßes oder Saures!", "Ich will dein Blut. Und dein Brot", "Ich bin keine Gans. Ich bin ein Vampir", "Buh!", "Lass das Licht an"],
   },
   fr: {
     apps: { messages: "Messages", calendar: "Calendrier", photos: "Photos", camera: "Appareil photo", maps: "Plans",
@@ -46,6 +50,7 @@ const LANGS = {
     sheet: ["Choisir un fond dans Photos", "Fond d'écran par défaut", "Annuler"],
     tooBig: "Impossible d'enregistrer le fond d'écran : l'image est trop grande.",
     gooseNotes: ["L'oie est passée ici", "Va dormir", "Coin coin !", "Bois de l'eau", "J'ai mangé ton pain", "Ne me touche pas", "Plus de pain"],
+    halloweenNotes: ["Des bonbons ou un sort !", "Je viens pour ton sang. Et ton pain", "Je ne suis pas une oie. Je suis un vampire", "Bouh !", "N'éteins pas la lumière"],
   },
   es: {
     apps: { messages: "Mensajes", calendar: "Calendario", photos: "Fotos", camera: "Cámara", maps: "Mapas",
@@ -55,6 +60,7 @@ const LANGS = {
     sheet: ["Elegir fondo de Fotos", "Fondo por omisión", "Cancelar"],
     tooBig: "No se pudo guardar el fondo: la imagen es demasiado grande.",
     gooseNotes: ["El ganso estuvo aquí", "Vete a dormir", "¡Cua cua!", "Bebe agua", "Me comí tu pan", "No me toques", "Se acabó el pan"],
+    halloweenNotes: ["¡Truco o trato!", "Vine por tu sangre. Y tu pan", "No soy un ganso. Soy un vampiro", "¡Bu!", "No apagues la luz"],
   },
   it: {
     apps: { messages: "Messaggi", calendar: "Calendario", photos: "Foto", camera: "Fotocamera", maps: "Mappe",
@@ -64,6 +70,7 @@ const LANGS = {
     sheet: ["Scegli sfondo da Foto", "Sfondo predefinito", "Annulla"],
     tooBig: "Impossibile salvare lo sfondo: l'immagine è troppo grande.",
     gooseNotes: ["L'oca è stata qui", "Vai a dormire", "Qua qua!", "Bevi acqua", "Ho mangiato il tuo pane", "Non toccarmi", "Pane finito"],
+    halloweenNotes: ["Dolcetto o scherzetto!", "Sono qui per il tuo sangue. E il pane", "Non sono un'oca. Sono un vampiro", "Bu!", "Non spegnere la luce"],
   },
   pt: {
     apps: { messages: "Mensagens", calendar: "Calendário", photos: "Fotos", camera: "Câmera", maps: "Mapas",
@@ -73,6 +80,7 @@ const LANGS = {
     sheet: ["Escolher fundo das Fotos", "Fundo padrão", "Cancelar"],
     tooBig: "Não foi possível salvar o fundo: a imagem é grande demais.",
     gooseNotes: ["O ganso esteve aqui", "Vai dormir", "Quá quá!", "Beba água", "Comi seu pão", "Não me toque", "Acabou o pão"],
+    halloweenNotes: ["Doces ou travessuras!", "Vim pelo seu sangue. E pelo pão", "Não sou um ganso. Sou um vampiro", "Bu!", "Não apague a luz"],
   },
   pl: {
     apps: { messages: "Wiadomości", calendar: "Kalendarz", photos: "Zdjęcia", camera: "Aparat", maps: "Mapy",
@@ -82,6 +90,7 @@ const LANGS = {
     sheet: ["Wybierz tapetę ze Zdjęć", "Domyślna tapeta", "Anuluj"],
     tooBig: "Nie udało się zapisać tapety: obraz jest za duży.",
     gooseNotes: ["Gęś tu była", "Idź spać", "Gę gę!", "Napij się wody", "Zjadłam twój chleb", "Nie dotykaj mnie", "Chleb się skończył"],
+    halloweenNotes: ["Cukierek albo psikus!", "Przyszłam po twoją krew. I chleb", "Nie jestem gęsią. Jestem wampirem", "Bu!", "Nie gaś światła"],
   },
   lt: {
     apps: { messages: "Žinutės", calendar: "Kalendorius", photos: "Nuotraukos", camera: "Kamera", maps: "Žemėlapiai",
@@ -91,6 +100,7 @@ const LANGS = {
     sheet: ["Fonas iš Nuotraukų", "Numatytasis fonas", "Atšaukti"],
     tooBig: "Nepavyko išsaugoti fono: paveikslėlis per didelis.",
     gooseNotes: ["Čia buvo žąsis", "Eik miegoti", "Ga ga!", "Atsigerk vandens", "Suvalgiau tavo duoną", "Neliesk manęs", "Duonos nebėra"],
+    halloweenNotes: ["Saldainis arba išdaiga!", "Atėjau tavo kraujo. Ir duonos", "Aš ne žąsis. Aš vampyras", "Bū!", "Neišjunk šviesos"],
   },
 };
 
