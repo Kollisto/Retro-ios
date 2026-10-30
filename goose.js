@@ -56,52 +56,67 @@ const Goose = (() => {
       <stop offset="0" stop-color="#ff6f93"/><stop offset=".38" stop-color="#ff9bb3"/><stop offset=".75" stop-color="#ffc4d2" stop-opacity="0"/></linearGradient></defs>`;
   const blush = (d, id) => `<path class="gs-blush" d="${d}" fill="url(#${id})"/>`;
 
-  // ---- Halloween costume (24 October - 1 November): a Dracula cape, black outside and
-  // blood-red inside, with a stand-up collar, a jewel clasp and two little white fangs ----
-  const CAPE = "#2a2830", SHEEN = "#45434e", RED = "#a3121f", RED_D = "#6f0912";
+  // ---- Halloween costume (24 October - 1 November): a long Dracula cape with a torn hem,
+  // black outside and blood-red inside, a tall stand-up collar, a jewel clasp and little fangs ----
+  const CAPE = "#2a2830", SHEEN = "#47454f", RED = "#a3121f", RED_D = "#6f0912";
   const cst = `stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"`;
+  const fold = (d) => `<path d="${d}" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/>`;
   const mirrorX = (d) => d.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, (m, px, py) => `${+(64 - px).toFixed(2)} ${py}`);
-  // a pointed bat-wing hem through the points xs (at y = py), scalloped up to y = sy between them
-  const hem = (xs, py, sy) => xs.slice(1).map((px, i) => `Q${((xs[i] + px) / 2).toFixed(1)} ${sy} ${px} ${py}`).join(" ");
+  const rag = (pts) => pts.map(([px, py]) => `L${px} ${py}`).join(" "); // a torn, zigzag hem
   const costume = (inner) => `<g class="gs-costume">${inner}</g>`;
-  const SIDE_COLLAR = costume(`<path d="M35.2 30 L28.6 16.4 Q33.8 19 37.8 24.4Z" fill="${CAPE}" ${cst}/>
-      <path d="M35.6 28.4 L31 19.6 Q34.4 21.6 36.9 25.2Z" fill="${RED}"/>`);
+  const gem = (cx, cy) => `<circle cx="${cx}" cy="${cy}" r="2" fill="${RED}" stroke="${INK}" stroke-width="1"/>
+      <circle cx="${cx - 0.6}" cy="${cy - 0.6}" r="0.6" fill="#ff8f8f"/>`;
+  const WHITE_TUFT = (d) => `<path d="${d}" fill="${WHITE}" ${cst}/>`;
+
+  // side, standing and walking: the cape hangs from the shoulders almost to the feet,
+  // the tail feathers poke out from under it at the back
+  const SIDE_COLLAR = costume(`<path d="M34.6 31 L29.8 15.6 Q33.8 17.6 37.6 20.6 L38 28Z" fill="${CAPE}" ${cst}/>
+      <path d="M35.2 28.8 L31.6 18.4 Q34.6 20 36.9 22.2Z" fill="${RED}"/>`);
   const SIDE_CAPE = costume(`<g class="gs-cape-side">
-      <path class="gs-cape-under" d="M2.4 37 Q2 45 3.6 54.4 ${hem([3.6, 12.6, 21.8, 30.4], 54.4, 50)} L33 44Z" fill="${RED_D}" ${cst}/>
-      <path d="M37 26.6 Q27 27.6 16.6 29.4 Q5.6 30.6 1.8 35.6 Q2.6 44 3.4 50.8 ${hem([3.4, 12.6, 21.8, 30.6], 52.8, 48.4)} Q33.6 41 38.8 28.6Z" fill="${CAPE}" ${cst}/>
-      <path d="M38.8 28.6 Q33.4 40 30.6 52.8 L27.8 51.4 Q30.8 39.6 36.4 28.2Z" fill="${RED}" ${cst}/>
-      <path d="M19 32.4 Q15 41 16.6 51.2 M10 35 Q7.6 42 8 49.6" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/></g>`);
-  const SIDE_CLASP = costume(`<path d="M35 26.4 Q40.5 28.4 45.6 28.6" fill="none" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>
-      <circle cx="45" cy="28.6" r="1.5" fill="${RED}" stroke="${INK}" stroke-width="0.9"/>`);
+      ${WHITE_TUFT("M7.4 48.6 Q1.6 50 -3.4 53.2 Q-0.2 53.8 -2 56.4 Q1.8 55.8 2.2 58.2 Q4.6 56.4 6.6 58.2 Q7.8 56 10.2 56.6 L12 50Z")}
+      <path d="M37 26.6 Q24 27.4 14.6 32.4 Q7.6 35.6 5 41.6 Q3 47.6 2.4 54.6 ${rag([[5, 53], [6.8, 56], [9.6, 53.8], [12.2, 56.6], [15, 54.2], [17.8, 56.8], [20.8, 54.4], [23.4, 56.4], [26.2, 54], [28.6, 55.8], [31, 53.4]])} Q34.4 41.4 38.8 28.6Z" fill="${CAPE}" ${cst}/>
+      <path d="M38.8 28.6 Q34.4 41.4 31 53.4 L28.6 55.8 L27.6 54.4 Q31 41 36.4 28.2Z" fill="${RED}" ${cst}/>
+      ${fold("M21 30 Q17 42 17.8 55.6 M30 28.6 Q27 41 26.2 53 M11 35.6 Q8 45 6.8 55")}</g>
+    <g class="gs-cape-run">
+      <path d="M43 27.4 Q30 22.4 16 22 Q5 21.8 -4.4 23.6 ${rag([[-2, 26], [-5.6, 28.4], [-2.4, 30.4], [-5.2, 33.2], [-1.6, 35], [-3.8, 38.4]])} Q6 40.6 14 37.6 Q24 33.8 31 34.6 Q37 33.6 43 31Z" fill="${CAPE}" ${cst}/>
+      <path d="M-3.8 38.4 Q6 40.6 14 37.6 Q24 33.8 31 34.6 L31.6 32.4 Q23.4 31.4 13.6 35.2 Q5 38.2 -1.8 36.2Z" fill="${RED}" ${cst}/>
+      ${fold("M13 22.6 Q6 28.6 1.4 35.6 M26 23.4 Q19 28.6 15 35.4 M4 22.4 Q0 25.6 -2.6 29")}</g>`);
+  const SIDE_CLASP = costume(`<path d="M35 26.4 Q40.5 28.4 45.6 28.6" fill="none" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>${gem(44.8, 28.6)}`);
   const SIDE_FANG = costume(`<path d="M54.3 16.9 L55.1 20.4 L56.1 16.8Z" fill="#fff" stroke="${INK}" stroke-width="0.7"/>`);
-  const F_COLLAR = "M27 27.5 L15.6 12 Q22.4 14.6 27.2 19.4Z", F_COLLAR_IN = "M26.4 25.4 L18.6 14.6 Q23 16.6 26.6 20.4Z";
-  const F_PANEL = `M27.2 25.6 Q17 26.4 14.4 34 Q12.6 42 12.4 51.6 ${hem([12.4, 17, 21.4], 53.4, 49.6)} Q19.4 38 27.2 27Z`;
-  const F_LINING = "M27.2 27 Q19.4 38 21.4 53.4 L24.2 52 Q22.6 39 27.6 29.2Z";
-  const F_UNDER = "M14.4 34 Q11.6 43 11 54.6 Q14 51 16.4 54.8 Q18.2 51.2 21 54.6 L20 44Z";
+
+  // front: a tall collar framing the head, the cape open down the front over the white chest
+  const F_COLLAR = "M27 27.5 L15 9.6 Q22 12.6 26.9 18.4Z", F_COLLAR_IN = "M26.3 25.2 L18 12.4 Q22.8 14.8 26.4 19.4Z";
+  const F_PANEL = `M27.2 25.6 Q17.6 26.6 14.6 33.6 Q11.4 43 10 55.6 ${rag([[12, 53.8], [13.8, 56.4], [16, 54.2], [18.2, 56.6], [20.4, 54.4], [22.6, 56.2]])} Q20.6 40 27.2 27Z`;
+  const F_LINING = "M27.2 27 Q20.6 40 22.6 56.2 L24.8 54.6 Q23 40 27.8 29.2Z";
   const COLLAR_FRONT = costume(`<path d="${F_COLLAR}" fill="${CAPE}" ${cst}/><path d="${mirrorX(F_COLLAR)}" fill="${CAPE}" ${cst}/>
       <path d="${F_COLLAR_IN}" fill="${RED}"/><path d="${mirrorX(F_COLLAR_IN)}" fill="${RED}"/>`);
-  const panel = (m) => `<path d="${m(F_UNDER)}" fill="${RED_D}" ${cst}/><path d="${m(F_PANEL)}" fill="${CAPE}" ${cst}/>
-      <path d="${m(F_LINING)}" fill="${RED}" ${cst}/><path d="${m("M17.6 31 Q15.4 40 16.4 50.4")}" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/>`;
-  // wrapped up to the eyes, lurking ...
-  const WRAP = `M12.6 36 Q13.6 22 22.5 16.2 Q27.5 13 32.5 13.2 Q41.5 14 47.8 21.8 Q51.2 30 51.6 53.4 ${hem([51.6, 41.8, 32, 22.2, 12.4], 53.4, 49.6)}Z`;
-  // ... and the wings flung open
-  const WING = "M27 25 Q14 11 0.5 15 Q6.5 22.5 3.5 30.5 Q10.5 34 9 41.5 Q15.5 43.5 16.5 50.5 Q20 47 22 44 Q22 33 27 27Z";
+  const panel = (m) => `<path d="${m(F_PANEL)}" fill="${CAPE}" ${cst}/><path d="${m(F_LINING)}" fill="${RED}" ${cst}/>${fold(m("M17.8 31 Q14.6 42 15 54.4"))}`;
+  // the scare: white wings flung up, the cape stretched under them like a bat's
+  const MEMBRANE = "M25 29 L-9 6.4 Q-12.6 16 -12.4 26 Q-7.4 25.4 -5.4 31.4 Q-0.4 30.6 1.6 37 Q6.4 36.6 8.6 42.6 Q13.6 42.4 15.4 48 Q19.6 47.4 22 51 L24.6 40Z";
+  const WING_UP = "M25.6 28.2 Q12 17 -9.4 5.6 Q-9.8 8 -7.4 8.8 Q-9 10.4 -5.6 10.8 Q-6.6 12.6 -2.6 12.8 Q-3 14.8 1 14.6 Q1.2 16.8 5.4 16.4 Q10 21 16 25 Q20 29 23.4 32.4Z";
   const FRONT_CAPE = costume(`<g class="gs-cape-panels"><g class="gs-cape-l">${panel((d) => d)}</g><g class="gs-cape-r">${panel(mirrorX)}</g></g>
-      <path d="M26.8 27.4 Q32 29.6 37.2 27.4" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/>
-      <circle cx="32" cy="28.7" r="1.6" fill="${RED}" stroke="${INK}" stroke-width="0.9"/>
-      <g class="gs-cape-spread">${[(d) => d, mirrorX].map((m) => `<path d="${m(WING)}" fill="${RED}" ${cst}/>
-        <path d="${m("M27 25 Q14 11 0.5 15 Q14 14.6 26.8 28.6Z")}" fill="${CAPE}" ${cst}/>
-        <path d="${m("M26 27 L3.5 30.5 M26 27.5 L9 41.5 M25.6 29 L16.5 50.5")}" stroke="${RED_D}" stroke-width="1" stroke-linecap="round"/>`).join("")}</g>`);
+      <path d="M26.8 27.4 Q32 29.6 37.2 27.4" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/>${gem(32, 28.8)}
+      <g class="gs-cape-spread">${[(d) => d, mirrorX].map((m) => `<path d="${m(MEMBRANE)}" fill="${RED}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+        <path d="${m("M24.4 30.4 L-12.4 26 M24.4 31.4 L-5.4 31.4 M24.4 32.6 L1.6 37 M24.2 34 L8.6 42.6 M24 36 L15.4 48")}" stroke="${RED_D}" stroke-width="1" stroke-linecap="round"/>
+        <path d="${m(WING_UP)}" fill="${WHITE}" ${cst}/>`).join("")}</g>`);
+  // lurking: wrapped up to the beak, a wing holding the edge, a sly sideways look and a glint
+  const WRAP = `M11.6 55.6 L12 36 Q13 25 20 20.6 Q26 17.8 32 17 Q37.4 16.4 41.6 16.8 Q50.4 26 52 55.6 ${rag([[49.8, 53.8], [47.6, 56.4], [45.2, 54.2], [42.8, 56.6], [40.4, 54.4], [38, 56.6], [35.6, 54.4], [33.2, 56.6], [30.8, 54.4], [28.4, 56.6], [26, 54.4], [23.6, 56.6], [21.2, 54.4], [18.8, 56.6], [16.4, 54.4], [14, 56.4]])}Z`;
   const FRONT_WRAP = costume(`<g class="gs-cape-wrap"><path d="${WRAP}" fill="${CAPE}" ${cst}/>
-      <path d="M22.5 16.2 Q27.5 13 32.5 13.2 Q41.5 14 47.8 21.8 L46.4 23.6 Q40.6 17.2 32.4 16.4 Q27.6 16.1 23.6 18.2Z" fill="${RED}" ${cst}/>
-      <path d="M18 25 Q24 36 21.8 50 M42.6 22 Q38.4 35 41.4 50" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/></g>`);
+      <path d="M20 20.6 Q26 17.8 32 17 Q37.4 16.4 41.6 16.8 L40.8 19 Q36.8 18.8 32 19.6 Q26.4 20.4 21.4 22.8Z" fill="${RED}" ${cst}/>
+      ${fold("M40 21 Q30 34 25 54.4 M44.4 22 Q42 38 42.8 55.6 M18 27 Q15 40 16.4 54.4")}
+      <path d="M33.6 19.8 Q33.4 15.6 37.6 14 Q42 13 43.6 15.6 Q41.8 15.8 42.8 17.6 Q40.8 17.6 41.6 19.6 Q39.6 19.4 39.6 21.2 Q36.4 22.6 33.6 19.8Z" fill="${WHITE}" ${cst}/>
+      <g class="gs-sly"><circle cx="30.1" cy="11.4" r="1.1" fill="${INK}"/><circle cx="35.7" cy="11.4" r="1.1" fill="${INK}"/>
+        <path d="M28.2 10.5 L31.8 10.9 M33.8 10.9 L37.4 10.5" stroke="${INK}" stroke-width="1.3" stroke-linecap="round"/></g>
+      <path class="gs-glint" d="M47 1.4 Q47.6 4.2 50.4 4.8 Q47.6 5.4 47 8.2 Q46.4 5.4 43.6 4.8 Q46.4 4.2 47 1.4Z" fill="#f4b733" stroke="${INK}" stroke-width="0.8" stroke-linejoin="round"/></g>`);
   const FRONT_FANGS = costume(`<path class="gs-fangs-front" d="M30.2 17.4 L31 20.9 L31.9 17.8Z M33.8 17.4 L33 20.9 L32.1 17.8Z" fill="#fff" stroke="${INK}" stroke-width="0.7"/>`);
-  // from behind the stand-up collar is one piece that hides the neck, with a hint of red at its rim
-  const BACK_CAPE = costume(`<path d="M25.6 28 L15.6 12 Q24 17.4 32 17.8 Q40 17.4 48.4 12 L38.4 28Z" fill="${CAPE}" ${cst}/>
-      <path d="M18 14.4 Q24.6 19 32 19.4 Q39.4 19 46 14.4" fill="none" stroke="${RED}" stroke-width="1.1" stroke-linecap="round"/>
-      <path d="M32 21 L32 26.6 M25.4 19.6 L28 26.4 M38.6 19.6 L36 26.4" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/>
-      <g class="gs-cape-back"><path d="M26.8 25.4 Q16.4 26 14 34 Q12.4 43 12.2 51.6 ${hem([12.2, 22.1, 32, 41.9, 51.8], 53.6, 49.8)} Q51.6 43 50 34 Q47.6 26 37.2 25.4Z" fill="${CAPE}" ${cst}/>
-      <path d="M27 28 Q22.6 40 22.1 53 M37 28 Q41.4 40 41.9 53 M32 29 L32 52.6" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/></g>`);
+  // back: the stand-up collar hides the neck; the cape is cut away over the tail feathers
+  const BACK_CAPE = costume(`${WHITE_TUFT("M25 46 Q22.4 52 24.4 56.2 Q26.6 54.8 27.6 57.4 Q29.6 55.4 31 57.8 Q32.4 55.6 34.2 57.8 Q35.4 55.2 37.6 57 Q39.4 54.6 40.6 55.4 Q41.6 51 39 46Z")}
+      <path d="M24.6 28.4 L19 13.4 Q32 17.6 45 13.4 L39.4 28.4Z" fill="${CAPE}" ${cst}/>
+      <path d="M20.4 14.8 Q32 18.6 43.6 14.8" fill="none" stroke="${RED}" stroke-width="1.3" stroke-linecap="round"/>
+      ${fold("M32 20 L32 27 M26 18.6 L27.6 27 M38 18.6 L36.4 27")}
+      <g class="gs-cape-back"><path d="M26.8 25.4 Q16.4 26.4 13.4 34 Q10.6 44 9.6 55.8 ${rag([[11.8, 54], [13.8, 56.6], [16.2, 54.4], [18.6, 56.8], [21, 54.6], [23.4, 56.4], [25.8, 54.4]])} Q26.4 44.6 32 44.2 Q37.6 44.6 38.2 54.4 ${rag([[40.6, 56.4], [43, 54.6], [45.4, 56.8], [47.8, 54.4], [50.2, 56.6], [52.2, 54], [54.4, 55.8]])} Q53.4 44 50.6 34 Q47.6 26.4 37.2 25.4Z" fill="${CAPE}" ${cst}/>
+      <path d="M26.4 50.4 Q27.6 46 32 45.6 Q36.4 46 37.6 50.4" fill="none" stroke="${RED}" stroke-width="1.2" stroke-linecap="round"/>
+      ${fold("M27 28 Q21.6 40 21 54.6 M37 28 Q42.4 40 43 54.6 M17 33 Q14 44 13.8 55.6 M47 33 Q50 44 50.2 55.6")}</g>`);
   el.innerHTML = `
     <div class="goose-shadow"></div>
     <div class="goose-sparks"></div>
@@ -130,7 +145,7 @@ const Goose = (() => {
       ${legs(frontLeg, 26, 38)}${COLLAR_FRONT}
       ${outline(EGG)}${outline(NECK_UP)}${fill(EGG)}${fill(NECK_UP)}${blush(NECK_UP, "gs-pink-f")}
       <path d="M19.5 36 Q20.5 44 26 48 M44.5 36 Q43.5 44 38 48" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>${FRONT_CAPE}
-      <circle cx="29.2" cy="11.2" r="1.15" fill="${INK}"/><circle cx="34.8" cy="11.2" r="1.15" fill="${INK}"/>
+      <g class="gs-eyes-front"><circle cx="29.2" cy="11.2" r="1.15" fill="${INK}"/><circle cx="34.8" cy="11.2" r="1.15" fill="${INK}"/></g>
       <ellipse class="gs-mouth" cx="32" cy="17.6" rx="2.2" ry="2.6" fill="#7a1d0a" stroke="${INK}" stroke-width="1.2"/>
       ${FRONT_FANGS}
       <path class="gs-beak-front" d="M28.8 14 Q32 12.8 35.2 14 Q34.2 18.6 32 19.2 Q29.8 18.6 28.8 14Z" fill="${ORANGE}" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>
@@ -647,6 +662,19 @@ const Goose = (() => {
     flap += (target - flap) * Math.min(1, dt * 5);
     const ripple = flap > 0.02 ? Math.sin(now / 75) * 0.12 * flap : 0;
     el.style.setProperty("--flap", (flap + ripple).toFixed(3));
+  }
+
+  let lastDust = 0;
+  function dust(now) {
+    if (!halloween || view !== "side" || !el.classList.contains("running") || now - lastDust < 150) return;
+    lastDust = now;
+    const d = document.createElement("div");
+    d.className = "goose-dust";
+    d.innerHTML = "<i></i>".repeat(3);
+    d.style.transform = `translate(${x + (dir > 0 ? 4 : 42)}px, ${y + 50}px)`;
+    d.style.setProperty("--dx", -dir * 10 + "px");
+    layer.prepend(d);
+    setTimeout(() => d.remove(), 700);
   }
 
   function lurk() {
@@ -1200,6 +1228,7 @@ const Goose = (() => {
       else if (task.until && now > task.until) { const done = task; task = null; done.then?.(); }
     }
     capeFlap(dt, now);
+    dust(now);
     moveBats(dt, now);
     place();
     raf = requestAnimationFrame(tick);
