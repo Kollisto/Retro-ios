@@ -422,9 +422,10 @@ body { position: relative; }
 .goose .gs-eye-shut { display: none; }
 .goose.sleeping .gs-eye, .goose.sleeping .gs-brow, .goose.sleeping .gs-beak { display: none; } /* beak tucked into the feathers */
 .goose.sleeping .gs-eye-shut { display: inline; }
-.goose.sleeping .gs-leg { display: none; }
-.goose.sleeping .view-side { translate: 0 7px; animation: breathe 3.2s ease-in-out infinite; }
-.goose.sleeping .gs-neck { transform: rotate(-68deg); transition: transform .8s ease; }
+.goose .gs-sleep { display: none; }
+.goose.sleeping .view-side > :not(.gs-sleep):not(defs) { display: none; }
+.goose.sleeping .gs-sleep { display: inline; transform-origin: 28px 60px; animation: breathe 3.2s ease-in-out infinite; }
+.goose.sleeping .goose-shadow { left: 8px; width: 48px; }
 @keyframes breathe { 50% { scale: 1.025 .975; } }
 .goose-zzz { position: absolute; left: 0; right: 0; top: 0; height: 0; pointer-events: none; }
 .goose-zzz i {

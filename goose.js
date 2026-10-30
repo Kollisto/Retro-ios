@@ -117,6 +117,21 @@ const Goose = (() => {
       <g class="gs-cape-back"><path d="M26.8 25.4 Q16.4 26.4 13.4 34 Q10.6 44 9.6 55.8 ${rag([[11.8, 54], [13.8, 56.6], [16.2, 54.4], [18.6, 56.8], [21, 54.6], [23.4, 56.4], [25.8, 54.4]])} Q26.4 44.6 32 44.2 Q37.6 44.6 38.2 54.4 ${rag([[40.6, 56.4], [43, 54.6], [45.4, 56.8], [47.8, 54.4], [50.2, 56.6], [52.2, 54], [54.4, 55.8]])} Q53.4 44 50.6 34 Q47.6 26.4 37.2 25.4Z" fill="${CAPE}" ${cst}/>
       <path d="M26.4 50.4 Q27.6 46 32 45.6 Q36.4 46 37.6 50.4" fill="none" stroke="${RED}" stroke-width="1.2" stroke-linecap="round"/>
       ${fold("M27 28 Q21.6 40 21 54.6 M37 28 Q42.4 40 43 54.6 M17 33 Q14 44 13.8 55.6 M47 33 Q50 44 50.2 55.6")}</g>`);
+  // asleep: lying down in a round heap, the big round head resting in front, eyes shut
+  // (in the Halloween season wrapped up in the cape, the head peeking out as from a hood)
+  const SLEEP_BODY = "M4 60 Q3 46 14 40 Q26 34 38 36.4 Q50 39 53 50 Q54.6 56 53 60Z";
+  const SLEEP_TAIL = "M6 50 Q0 46 -1 50 Q1.6 54 5.4 55Z";
+  const SLEEP_HEAD = "M40 43.2 Q48.4 43.2 48.4 51 Q48.4 58.8 40 58.8 Q31.6 58.8 31.6 51 Q31.6 43.2 40 43.2Z";
+  const SLEEP_BLANKET = costume(`<path d="M3 60.4 Q0.6 46 12 39 Q24 32.4 38 34.6 Q52 37.4 55.4 50 Q57 56 55 60.4 ${rag([[52.4, 59], [49.8, 60.8], [47.2, 59.2], [44.6, 60.8], [42, 59.2], [39.4, 60.8], [36.8, 59.2], [34.2, 60.8], [31.6, 59.2], [29, 60.8], [26.4, 59.2], [23.8, 60.8], [21.2, 59.2], [18.6, 60.8], [16, 59.2], [13.4, 60.8], [10.8, 59.2], [8.2, 60.8], [5.6, 59.4]])}Z" fill="${CAPE}" ${cst}/>
+      ${fold("M14 40 Q12 50 13 59.4 M24 35.4 Q22 47 23 59.4 M50.6 43 Q54 50 52.6 59")}
+      <path d="M40 40.8 Q51 40.8 51 51 Q51 60.6 40 60.6 Q29 60.6 29 51 Q29 40.8 40 40.8Z" fill="${RED}" ${cst}/>
+      <path d="M30.4 45 L26.4 34.8 Q31.4 37 34.2 41Z" fill="${CAPE}" ${cst}/><path d="M30.8 42.6 L28.4 37 Q31.2 38.6 32.8 40.8Z" fill="${RED}"/>`);
+  const SLEEPING = `<g class="gs-sleep">
+      ${outline(SLEEP_BODY)}${outline(SLEEP_TAIL)}${fill(SLEEP_BODY)}${fill(SLEEP_TAIL)}
+      <path d="M10 52 Q18 44 28 46" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>
+      ${SLEEP_BLANKET}${outline(SLEEP_HEAD)}${fill(SLEEP_HEAD)}
+      <path d="M46 52.6 Q51.4 52.4 53.4 55 Q50.4 57.6 46 56.8Z" fill="${ORANGE}" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M39.4 50.2 Q41.6 52.4 43.8 50.2" fill="none" stroke="${INK}" stroke-width="1.3" stroke-linecap="round"/></g>`;
   el.innerHTML = `
     <div class="goose-shadow"></div>
     <div class="goose-sparks"></div>
@@ -140,6 +155,7 @@ const Goose = (() => {
         <path class="gs-eye-shut" d="M44.4 14.4 Q46 16.2 47.6 14.4" fill="none" stroke="${INK}" stroke-width="1.3" stroke-linecap="round"/>
         <path class="gs-brow" d="M43.6 10.8 L48.6 12.9" stroke="${INK}" stroke-width="1.6" stroke-linecap="round"/>
       </g>
+      ${SLEEPING}
     </svg>
     <svg class="gs-view view-front" viewBox="0 0 64 64">${blushGrad("gs-pink-f")}
       ${legs(frontLeg, 26, 38)}${COLLAR_FRONT}
@@ -458,7 +474,7 @@ const Goose = (() => {
       lastZ = now;
       const z = document.createElement("i");
       z.textContent = "z";
-      z.style.left = (dir > 0 ? 6 : 40) + "px";
+      z.style.left = (dir > 0 ? 38 : 12) + "px"; // over the head
       zzzEl.append(z);
       setTimeout(() => z.remove(), 2600);
     }
