@@ -16,7 +16,6 @@ const rad = (id, stops, cx = 0.5, cy = 0.5, r = 0.5) =>
 
 const bg = (id) => `<rect width="60" height="60" fill="url(#${id})"/>`;
 
-const WEEKDAYS = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
 
 const ICONS = {
   phone: () => svg(`
@@ -67,7 +66,7 @@ const ICONS = {
     <rect width="60" height="17" fill="url(#cl-h)"/>
     <rect y="17" width="60" height="1" fill="#7f1510" opacity=".5"/>
     <text x="30" y="12.4" text-anchor="middle" fill="#fff" font-size="8.6" font-weight="700"
-      font-family="Helvetica Neue, Helvetica, Arial">${WEEKDAYS[now.getDay()]}</text>
+      font-family="Helvetica Neue, Helvetica, Arial">${weekday(now)}</text>
     <text x="30" y="51" text-anchor="middle" fill="#1d1d1d" font-size="33" font-weight="700"
       font-family="Helvetica Neue, Helvetica, Arial" letter-spacing="-1">${now.getDate()}</text>`),
 
@@ -192,7 +191,7 @@ const ICONS = {
       <rect width="60" height="15" fill="url(#nt-l)"/>
       <line x1="0" y1="11.5" x2="60" y2="11.5" stroke="#e8cfa6" stroke-width=".8" stroke-dasharray="2 1.6"/>
       <rect y="15" width="60" height="2" fill="#000" opacity=".2"/>
-      <text x="17" y="31" fill="#3b3326" font-size="6" font-family="Marker Felt, Noteworthy, cursive">Купить…</text>`);
+      <text x="17" y="31" fill="#3b3326" font-size="6" font-family="Marker Felt, Noteworthy, cursive">${T.note}</text>`);
   },
 
   reminders: () => svg(`

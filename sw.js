@@ -1,6 +1,6 @@
 // Offline cache. Bump VERSION whenever any file changes.
-const VERSION = "retro5-v42";
-const FILES = ["./", "index.html", "styles.css", "wallpaper.js", "icons.js", "weather.js", "app.js", "goose.js", "manifest.webmanifest",
+const VERSION = "retro5-v43";
+const FILES = ["./", "index.html", "styles.css", "i18n.js", "wallpaper.js", "icons.js", "weather.js", "app.js", "goose.js", "manifest.webmanifest",
   "apple-touch-icon.png", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (e) => {

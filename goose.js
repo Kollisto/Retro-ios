@@ -6,7 +6,7 @@ const Goose = (() => {
   const KEY = "retro5-goose";
   const SIZE = 64;
   const WALK = 45, RUN = 150; // px per second
-  const NOTES = ["Гусь был здесь", "Иди спать", "Га-га!", "Попей воды", "Я съел твой хлеб", "Не трогай меня", "Хлеб кончился"];
+  const NOTES = T.gooseNotes;
 
   const screenEl = document.querySelector(".screen");
   const tracks = document.createElement("div"); // footprints, under the icons
