@@ -124,7 +124,7 @@ const Goose = (() => {
   }
 
   // ---- sound ----
-  let audio = null;
+  let audio = null, honkTimer = 0;
   function honk() {
     try {
       if (navigator.audioSession) navigator.audioSession.type = "ambient";
@@ -158,7 +158,8 @@ const Goose = (() => {
       }
     } catch {}
     el.classList.add("honking");
-    setTimeout(() => el.classList.remove("honking"), 380);
+    clearTimeout(honkTimer);
+    honkTimer = setTimeout(() => el.classList.remove("honking"), 420);
   }
 
   // ---- tail ----
@@ -441,10 +442,10 @@ const Goose = (() => {
     el.classList.add("angry");
     el.classList.toggle("fury", fury);
     dropCarried();
+    // first it turns to face you and honks, then it starts wrecking the screen
+    view = "front";
     honk();
-    // first a short charge down the screen, then it goes for the icons
-    const b = box();
-    task = { kind: "walk", tx: x, ty: Math.min(y + rand(110, 170), b.bottom - SIZE), speed: RUN * 1.15, then: rampage };
+    task = { kind: "stand", face: "front", until: performance.now() + 800, then: rampage };
   }
 
   function rampage() {
@@ -533,9 +534,10 @@ const Goose = (() => {
       el.classList.remove("walking", "running");
       stride(0, 0, 0);
       if (task.kind === "peck") view = "side"; // pecking is drawn from the side
+      if (task.face) view = task.face;
       setPose(task.kind === "peck" ? "peck" : "stand");
       if (task.eating) bite(task, now);
-      else if (now > task.until) task = null;
+      else if (now > task.until) { const done = task; task = null; done.then?.(); }
     }
     place();
     raf = requestAnimationFrame(tick);
