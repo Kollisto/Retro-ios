@@ -30,19 +30,24 @@ const Goose = (() => {
   // outline copy underneath, fill copy on top
   const outline = (d) => `<path d="${d}" fill="${INK}" stroke="${INK}" stroke-width="3.2" stroke-linejoin="round"/>`;
   const fill = (d) => `<path d="${d}" fill="${WHITE}"/>`;
-  // Goose legs: a short orange shank and a webbed three-toed foot.
+  // Goose legs: a thin orange shank and a soft rounded triangle of a foot, drawn as one shape:
+  // both outlines underneath, both fills on top, so there is no seam where the foot meets the leg.
   // The shank is a line from the hip (fixed to the body) to the ankle (moves with the foot),
   // so the leg always stays attached to the body however far the foot is from it.
-  const shank = (x, hipY, ankleY) => `
-      <line class="gs-shank-o" x1="${x}" y1="${hipY}" x2="${x}" y2="${ankleY}" stroke="${INK}" stroke-width="5.4" stroke-linecap="round"/>
-      <line class="gs-shank" x1="${x}" y1="${hipY}" x2="${x}" y2="${ankleY}" stroke="${ORANGE}" stroke-width="2.8" stroke-linecap="round"/>`;
-  const sideLeg = (cls, x) => `<g class="gs-leg ${cls}" data-hip="${x},48" data-ankle="${x},58.6">${shank(x, 48, 58.6)}
-      <g class="gs-foot"><path d="M${x - 3} 61.4 L${x - 1.8} 58.4 L${x + 1.4} 57.9 L${x + 9.6} 59.7 Q${x + 10.4} 61 ${x + 9.1} 61.5
-        Q${x + 7.7} 60.8 ${x + 6.6} 61.5 Q${x + 5.2} 60.8 ${x + 4.1} 61.5 Q${x + 2.8} 60.8 ${x + 1.7} 61.5Z"/></g></g>`;
-  const frontLeg = (cls, x) => `<g class="gs-leg ${cls}" data-hip="${x},46" data-ankle="${x},56.5">${shank(x, 46, 56.5)}
-      <g class="gs-foot"><path d="M${x} 56 L${x - 6} 61.6 Q${x - 4} 60.6 ${x - 2} 61.7 Q${x} 60.6 ${x + 2} 61.7 Q${x + 4} 60.6 ${x + 6} 61.6Z"/></g></g>`;
-  const legs = (leg, xa, xb) => `<g fill="${ORANGE}" stroke="${INK}" stroke-width="1.3" stroke-linejoin="round">${leg("gs-leg-a", xa)}${leg("gs-leg-b", xb)}</g>`;
-  const shadow = `<ellipse cx="32" cy="61.6" rx="14" ry="2.2" fill="#000" opacity=".16"/>`;
+  const SIDE_FOOT = "M-2.2 4.4 Q-3.4 1 -0.4 -0.3 Q4 -0.2 10.2 2 Q13.6 3.4 12.6 4.9 Q12 5.6 10.4 5.6 L0.2 5.6 Q-1.8 5.5 -2.2 4.4Z";
+  const FRONT_FOOT = "M0 -0.6 Q-1.6 -0.6 -4.6 3 Q-7.8 6.6 -5.6 6.9 L5.6 6.9 Q7.8 6.6 4.6 3 Q1.6 -0.6 0 -0.6Z";
+  const leg = (cls, x, hipY, ankleY, foot, k) => {
+    const t = `translate(${x} ${ankleY}) scale(${k})`;
+    const line = (c, w, extra) => `<line ${extra} x1="${x}" y1="${hipY}" x2="${x}" y2="${ankleY}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
+    return `<g class="gs-leg ${cls}" data-hip="${x},${hipY}" data-ankle="${x},${ankleY}">
+      ${line(INK, 5.4, 'class="gs-shank-o"')}
+      <g class="gs-foot"><path d="${foot}" transform="${t}" fill="${INK}" stroke="${INK}" stroke-width="${(3 / k).toFixed(2)}" stroke-linejoin="round"/></g>
+      ${line(ORANGE, 2.8, 'class="gs-shank"')}
+      <g class="gs-foot"><path d="${foot}" transform="${t}" fill="${ORANGE}"/></g></g>`;
+  };
+  const sideLeg = (cls, x) => leg(cls, x, 48, 57.8, SIDE_FOOT, 0.85);
+  const frontLeg = (cls, x) => leg(cls, x, 46, 55.4, FRONT_FOOT, 0.8);
+  const legs = (make, xa, xb) => `<g>${make("gs-leg-a", xa)}${make("gs-leg-b", xb)}</g>`;
   // front and back: an egg-shaped body with the neck rising from its middle
   const EGG = "M32 22 Q46.5 24 47 38.5 Q47 51 32 51.5 Q17 51 17 38.5 Q17.5 24 32 22Z";
   const NECK_UP = "M26.5 33 Q25.5 19 26.5 13.5 Q27.5 5.5 32 5.5 Q36.5 5.5 37.5 13.5 Q38.5 19 37.5 33Z";
@@ -51,10 +56,10 @@ const Goose = (() => {
       <stop offset="0" stop-color="#ff6f93"/><stop offset=".38" stop-color="#ff9bb3"/><stop offset=".75" stop-color="#ffc4d2" stop-opacity="0"/></linearGradient></defs>`;
   const blush = (d, id) => `<path class="gs-blush" d="${d}" fill="url(#${id})"/>`;
   el.innerHTML = `
+    <div class="goose-shadow"></div>
     <div class="goose-sparks"></div>
     <div class="goose-zzz"></div>
     <svg class="gs-view view-side" viewBox="0 0 64 64">${blushGrad("gs-pink-s")}
-      ${shadow}
       ${legs(sideLeg, 24, 32)}
       ${outline(BODY)}
       <g class="gs-tail">${outline(TAIL)}</g>
@@ -73,7 +78,6 @@ const Goose = (() => {
       </g>
     </svg>
     <svg class="gs-view view-front" viewBox="0 0 64 64">${blushGrad("gs-pink-f")}
-      ${shadow}
       ${legs(frontLeg, 26, 38)}
       ${outline(EGG)}${outline(NECK_UP)}${fill(EGG)}${fill(NECK_UP)}${blush(NECK_UP, "gs-pink-f")}
       <path d="M19.5 36 Q20.5 44 26 48 M44.5 36 Q43.5 44 38 48" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>
@@ -83,7 +87,6 @@ const Goose = (() => {
       <path class="gs-brow" d="M26.8 8.2 L30.6 9.6 M37.2 8.2 L33.4 9.6" stroke="${INK}" stroke-width="1.5" stroke-linecap="round"/>
     </svg>
     <svg class="gs-view view-back" viewBox="0 0 64 64">${blushGrad("gs-pink-b")}
-      ${shadow}
       ${legs(frontLeg, 26, 38)}
       ${outline(EGG)}${outline(NECK_UP)}<g class="gs-tail gs-tail-back">${outline(BACK_TAIL)}</g>
       ${fill(EGG)}${fill(NECK_UP)}${blush(NECK_UP, "gs-pink-b")}<g class="gs-tail gs-tail-back">${fill(BACK_TAIL)}</g>
@@ -95,7 +98,6 @@ const Goose = (() => {
   let task = null; // { kind, ... }
   let carried = null; // the .app element in the beak
   let food = null; // { el, x, y }
-  let gait = 0; // gait: position in the stride cycle, 0..1, advanced by distance walked
   const legsOf = {};
   let lastCarry = 0, lastNote = 0;
   let lastInteraction = performance.now(); // pokes, food, coming back from an app
@@ -214,10 +216,10 @@ const Goose = (() => {
   }
 
   // ---- walking ----
-  // The stride is driven by the distance covered, so the planted foot stays still on the ground
-  // while the body passes over it (no sliding), and faster movement means quicker, longer steps.
-  const WALK_STRIDE = 16, RUN_STRIDE = 26; // px covered per full cycle (one step of each foot)
-
+  // Each foot on the ground stays exactly where it was put down. When the body has moved on so far
+  // that a foot is left too far behind (or ahead), that foot takes a step: it lifts, swings along
+  // an arc and lands a little ahead, where the body is going. Only one foot is in the air at a time
+  // (unless the goose is in a real hurry), and faster movement makes quicker, longer steps.
   function legsFor(v) {
     if (!legsOf[v]) {
       const svg = el.querySelector(".view-" + v);
@@ -226,79 +228,104 @@ const Goose = (() => {
     return legsOf[v];
   }
 
-  const LEG_X = { side: [24, 32], front: [26, 38], back: [26, 38] }; // hips, in the drawing
-  const feet = [{ planted: false }, { planted: false }];
+  const feet = [{}, {}]; // world position of each ankle, and its step in progress
+  let feetView = "";
 
-  // Moves a foot by (dx, dy) and stretches its shank from the hip to the new ankle position.
-  function setLeg(leg, dx, dy) {
+  // Moves a foot by (dx, dy) in the drawing, tips it while it is in the air, and stretches
+  // its shank from the hip to the new ankle position.
+  function setLeg(leg, dx, dy, tilt = 0) {
     leg.parts ||= {
       lines: leg.querySelectorAll("line"),
-      foot: leg.querySelector(".gs-foot"),
+      feet: leg.querySelectorAll(".gs-foot"),
       hip: leg.dataset.hip.split(",").map(Number),
       ankle: leg.dataset.ankle.split(",").map(Number),
     };
-    const { lines, foot, hip, ankle } = leg.parts;
-    dy = Math.max(dy, hip[1] + 3 - ankle[1]); // the foot never climbs up into the body
+    const { lines, feet: footEls, hip, ankle } = leg.parts;
+    dy = Math.max(dy, hip[1] + 0.3 - ankle[1]); // the foot never climbs up into the body
     for (const l of lines) {
       l.setAttribute("x2", ankle[0] + dx);
       l.setAttribute("y2", ankle[1] + dy);
     }
-    foot.style.transform = dx || dy ? `translate(${dx}px, ${dy}px)` : "";
+    const tf = dx || dy || tilt ? `translate(${dx}px, ${dy}px) rotate(${tilt}deg)` : "";
+    for (const f of footEls) {
+      f.style.transformOrigin = `${ankle[0]}px ${ankle[1]}px`;
+      f.style.transform = tf;
+    }
   }
 
-  function stride(mx, my, speed) {
+  // where an ankle sits when the foot is right under its hip
+  function homeOf(leg) {
+    const [ax, ay] = leg.dataset.ankle.split(",").map(Number);
+    const mirrored = view === "side" && dir < 0;
+    return { x: x + (mirrored ? SIZE - ax : ax), y: y + ay };
+  }
+
+  function updateFeet(dt, vx, vy) {
     const [a, b, svg] = legsFor(view);
-    if (!speed) {
-      setLeg(a, 0, 0);
-      setLeg(b, 0, 0);
-      svg.style.translate = "";
-      feet.forEach((f) => (f.planted = false));
-      return;
+    const legsNow = [a, b];
+    const speed = Math.hypot(vx, vy);
+    if (feetView !== view) { // another drawing: put both feet down under it
+      feetView = view;
+      legsNow.forEach((l, i) => { const h = homeOf(l); Object.assign(feets(i), { wx: h.x, wy: h.y, swing: null }); });
     }
     const side = view === "side";
-    const running = speed > WALK * 1.5;
-    // seen from the front or back, steps look shorter (and keep the legs from over-stretching)
-    const len = side ? (running ? RUN_STRIDE : WALK_STRIDE) : (running ? 13 : 10);
-    const reach = len / 4;
-    // side view steps with the horizontal motion, front/back with the vertical
-    const along = side ? Math.abs(mx) : Math.abs(my);
-    gait = (gait + Math.max(along, Math.hypot(mx, my) * 0.3) / len) % 1;
-    // the body bobs once per step; the feet don't (they are on the ground)
-    const bob = Math.abs(Math.sin(gait * Math.PI * 2)) * 1.3;
-    svg.style.translate = `0 ${-bob}px`;
-    [a, b].forEach((leg, i) => {
-      const p = (gait + i * 0.5) % 1, foot = feet[i];
-      const hipX = x + (dir > 0 || !side ? LEG_X[view][i] : SIZE - LEG_X[view][i]);
-      let dx, dy, lift = 0;
-      if (p < 0.5) {
-        // planted: the foot stays where it was put down while the body moves over it
-        if (!foot.planted) {
-          foot.planted = true;
-          foot.wx = hipX + (side ? reach * dir : 0);
-          foot.wy = y;
-          footprint(foot.wx, y);
-        }
-        dx = side ? Math.max(-reach * 1.6, Math.min(reach * 1.6, (foot.wx - hipX) * dir)) : 0;
-        dy = Math.max(-7, Math.min(7, foot.wy - y)); // the leg stretches only so far
+    const reach = side ? Math.min(13, 6.5 + speed * 0.045) : Math.min(8, 4 + speed * 0.028);
+    const RISE = 7; // how far a planted foot may end up above its hip line before it must step
+    const ux = speed ? vx / speed : 0, uy = speed ? vy / speed : 0;
+    let bob = 0;
+    // first move the feet (steps start, swing, land) ...
+    legsNow.forEach((l, i) => {
+      const f = feets(i), other = feets(1 - i), h = homeOf(l);
+      if (f.swing) { // in the air: follow an arc to the landing spot
+        const sw = f.swing;
+        sw.t = Math.min(1, sw.t + dt / sw.dur);
+        const e = sw.t < 0.5 ? 2 * sw.t * sw.t : 1 - (-2 * sw.t + 2) ** 2 / 2;
+        f.wx = sw.fx + (sw.tx - sw.fx) * e;
+        f.wy = sw.fy + (sw.ty - sw.fy) * e;
+        f.lift = Math.sin(Math.PI * sw.t) * (side ? 3.4 : 2.8);
+        if (sw.t >= 1) { f.swing = null; f.lift = 0; footprint(f.wx, f.wy, ux, uy); }
       } else {
-        // swinging forward through the air
-        foot.planted = false;
-        const t = (p - 0.5) / 0.5;
-        dx = side ? -reach + t * 2 * reach : 0;
-        dy = 0;
-        lift = Math.sin(Math.PI * t) * (side ? 3 : 2.6);
+        const off = Math.hypot(f.wx - h.x, f.wy - h.y);
+        const settling = speed < 5 && off > 2.5;
+        const due = off > reach || h.y - f.wy > RISE || settling;
+        const urgent = off > reach * 2.2 || h.y - f.wy > RISE + 2; // only then may both feet be in the air
+        if (due && (!other.swing || urgent) && (!settling || !other.swing)) {
+          // land ahead of where the hip will be by then
+          const dur = settling ? 0.16 : Math.max(0.07, Math.min(0.26, (reach * 1.5) / Math.max(speed, 25)));
+          const lead = settling ? 0 : reach * 0.6;
+          f.swing = { t: 0, dur, fx: f.wx, fy: f.wy, tx: h.x + vx * dur + ux * lead, ty: h.y + vy * dur + uy * lead };
+        }
       }
-      setLeg(leg, dx, dy - lift + bob);
+      if (f.swing) bob = Math.max(bob, Math.sin(Math.PI * f.swing.t) * 1.3);
     });
+    // ... then draw them: the offset from the hip, in the drawing's own (possibly mirrored)
+    // coordinates, cancelling the body's bob so a planted foot stays exactly where it is
+    const mirror = side && dir < 0 ? -1 : 1;
+    legsNow.forEach((l, i) => {
+      const f = feets(i), h = homeOf(l);
+      const dx = (f.wx - h.x) * mirror, dy = f.wy - h.y - (f.lift || 0);
+      setLeg(l, dx, dy + bob, side ? -(f.lift || 0) * 7 : 0);
+    });
+    svg.style.translate = bob ? `0 ${-bob}px` : "";
+    shadowEl.style.scale = bob ? `${1 - bob * 0.04}` : "";
   }
+  const feets = (i) => feet[i];
+  const shadowEl = el.querySelector(".goose-shadow");
+
+  // ---- speed: tempos, speeding up and slowing down ----
+  const TEMPOS = [28, 45, 65]; // strolling, normal, brisk (running is RUN)
+  const tempo = () => { const r = Math.random(); return r < 0.3 ? TEMPOS[0] : r < 0.75 ? TEMPOS[1] : TEMPOS[2]; };
+  let curSpeed = 0, lastHeading = null;
 
   // ---- footprints ----
-  function footprint(fx, fy) {
+  function footprint(fx, fy, ux, uy) {
     const p = document.createElement("div");
     p.className = "goose-print" + (performance.now() < wetUntil ? " wet" : "");
-    p.style.transform = `translate(${fx - 5}px, ${fy + 57}px) rotate(${view === "side" ? (dir > 0 ? 90 : -90) : view === "front" ? 180 : 0}deg)`;
+    const angle = (ux || uy ? Math.atan2(uy, ux) * 180 / Math.PI : (dir > 0 ? 0 : 180)) + 90; // toes forward
+    const toe = view === "side" ? dir * 3.5 : 0;
+    p.style.transform = `translate(${fx + toe - 4.5}px, ${fy + 1}px) rotate(${angle}deg)`;
     tracks.append(p);
-    setTimeout(() => p.remove(), 2600);
+    setTimeout(() => p.remove(), 4200);
   }
 
   // ---- sleep ----
@@ -320,7 +347,6 @@ const Goose = (() => {
     sleepKind = isNight() ? "night" : "nap";
     wakeAt = sleepKind === "nap" ? now + rand(60000, 120000) : 0;
     view = "side";
-    stride(0, 0, 0);
     el.classList.add("sleeping");
     task = { kind: "sleep" };
   }
@@ -554,7 +580,7 @@ const Goose = (() => {
     if (r < 0.52) { if (Math.random() < 0.6) wag(); return (task = { kind: "stand", until: now + rand(800, 2000) }); }
     if (Math.random() < 0.2) wag(); // now and then on the way somewhere
     const s = randomSpot();
-    task = { kind: "walk", tx: s.x, ty: s.y, speed: WALK };
+    task = { kind: "walk", tx: s.x, ty: s.y, speed: tempo(), pauseHalfway: Math.random() < 0.2 };
   }
 
   function startCarry() {
@@ -865,30 +891,49 @@ const Goose = (() => {
     if (task.kind === "walk" || task.kind === "fetch") {
       const dx = task.tx - x, dy = task.ty - y, dist = Math.hypot(dx, dy);
       setPose("walk");
-      if (dist < 2) {
+      task.total ??= dist;
+      if (task.pauseHalfway && dist < task.total / 2) { // stops on the way to look around
+        const rest = task;
+        rest.pauseHalfway = false;
+        task = { kind: "stand", until: now + rand(600, 1400), then: () => { task = rest; } };
+      } else if (dist < 1.5) {
         const done = task;
         task = null;
         el.classList.remove("walking", "running");
+        updateFeet(dt, 0, 0);
         if (done.kind === "fetch") grab(done.target);
         else done.then?.();
       } else {
-        const step = Math.min(dist, task.speed * dt);
+        // speed up gently, slow down before arriving, and ease off on sharp turns
+        const heading = Math.atan2(dy, dx);
+        if (lastHeading !== null) {
+          let turn = Math.abs(heading - lastHeading);
+          if (turn > Math.PI) turn = 2 * Math.PI - turn;
+          if (turn > 1) curSpeed *= 0.5;
+        }
+        lastHeading = heading;
+        const hurry = task.speed > 100;
+        const want = Math.min(task.speed, Math.sqrt(2 * (hurry ? 420 : 160) * dist) + 6);
+        const accel = hurry ? 600 : 140;
+        curSpeed += Math.max(-420 * dt, Math.min(accel * dt, want - curSpeed));
+        const step = Math.min(dist, Math.max(curSpeed, 6) * dt);
         const mx = (dx / dist) * step, my = (dy / dist) * step;
         x += mx;
         y += my;
         if (Math.abs(dx) > 1) dir = dx > 0 ? 1 : -1;
         // mostly vertical moves show the goose from the front or from behind
-        const nextView = Math.abs(dy) > Math.abs(dx) * 1.4 ? (dy > 0 ? "front" : "back") : "side";
-        if (nextView !== view) { stride(0, 0, 0); view = nextView; }
+        view = Math.abs(dy) > Math.abs(dx) * 1.4 ? (dy > 0 ? "front" : "back") : "side";
         el.classList.add("walking");
-        el.classList.toggle("running", task.speed > WALK * 1.5);
-        stride(mx, my, task.speed);
+        el.classList.toggle("running", curSpeed > 95);
+        updateFeet(dt, mx / dt, my / dt);
       }
     } else {
       el.classList.remove("walking", "running");
-      stride(0, 0, 0);
+      curSpeed = 0;
+      lastHeading = null;
       if (task.kind === "peck" || task.kind === "sleep" || task.hissing || task.splash) view = "side";
       if (task.face) view = task.face;
+      updateFeet(dt, 0, 0); // feet settle under the body
       if (task.kind === "sleep") snooze(now);
       if (task.splash && now - lastDrop > 90) { lastDrop = now; droplet(); }
       setPose(task.kind === "peck" ? "peck" : "stand");
