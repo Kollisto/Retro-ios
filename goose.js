@@ -451,12 +451,12 @@ const Goose = (() => {
 
   // ---- anger: three pokes within three seconds ----
   // Anger lasts 5 s. Every time it is made angry again within a minute of the previous time,
-  // later angers last 10 s longer; that bonus counts angers of the last hour and is remembered
+  // later angers last 10 s longer; that bonus counts angers of the last 15 minutes and is remembered
   // across launches. At the 1-minute cap it is a fury: grabbed icons stay scattered for a
   // minute after it calms down.
   const ANGER_KEY = "retro5-goose-anger";
   const ANGRY_MS = 5000, ANGRY_STEP = 10000, ANGRY_MAX = 60000, SCATTER_MS = 60000;
-  const HOUR = 3600000, MINUTE = 60000;
+  const ANGER_WINDOW = 15 * 60000, MINUTE = 60000;
   const ANGRY_POKE_MS = 5000;
   let fury = false, angerStart = 0, angryPokes = 0;
 
@@ -464,7 +464,7 @@ const Goose = (() => {
     const now = Date.now();
     let events = [];
     try { events = JSON.parse(localStorage.getItem(ANGER_KEY)) || []; } catch {}
-    events = events.filter((e) => now - e.t < HOUR);
+    events = events.filter((e) => now - e.t < ANGER_WINDOW);
     const prev = events[events.length - 1];
     events.push({ t: now, quick: !!prev && now - prev.t < MINUTE });
     try { localStorage.setItem(ANGER_KEY, JSON.stringify(events)); } catch {}
