@@ -353,16 +353,23 @@ const Goose = (() => {
   }
 
   // icons left lying around after a fury slide back to their places
-  let scatteredTimer = 0;
+  let scatteredTimer = 0, scatterDeadline = 0;
+  function scheduleScatterReturn(ms) {
+    clearTimeout(scatteredTimer);
+    scatterDeadline = performance.now() + ms;
+    scatteredTimer = setTimeout(restoreScattered, ms);
+  }
   const scattered = new Set();
   function restoreScattered(ms = 600) {
     clearTimeout(scatteredTimer);
+    scatterDeadline = 0;
     for (const a of scattered) {
       a.style.transition = `transform ${ms}ms ease-in-out`;
       a.style.transform = "";
       setTimeout(() => { a.classList.remove("scattered"); a.style.transition = ""; }, ms + 20);
     }
     scattered.clear();
+    if (on) saveMood(); // nothing left lying around to remember
   }
 
   function startNote() {
@@ -535,10 +542,12 @@ const Goose = (() => {
     dropCarried(); // in a fury this leaves the icon lying with the others
     if (fury) {
       clearTimeout(scatteredTimer);
+      scatterDeadline = 0;
       el.classList.add("flushed"); // still pink until it starts eating
       fury = false;
     }
     markAngerEnd();
+    saveMood();
     honk();
   }
 
@@ -548,8 +557,9 @@ const Goose = (() => {
     pokes = [];
     angryPokes = 0;
     el.classList.remove("angry", "fury", "grumpy", "calming", "flushed");
+    setTimeout(saveMood, 0);
     dropCarried();
-    if (fury) { fury = false; scatteredTimer = setTimeout(restoreScattered, SCATTER_MS); }
+    if (fury) { fury = false; scheduleScatterReturn(SCATTER_MS); }
     markAngerEnd();
     task = null;
   }
@@ -586,6 +596,7 @@ const Goose = (() => {
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
     if (fury && now - lastSpark > rand(650, 950)) { lastSpark = now; spark(); }
+    if ((angryUntil || scattered.size) && now - lastMoodSave > 1000) saveMood();
     flush(dt);
     if (angryUntil) {
       if (now > angryUntil) calmDown();
@@ -627,6 +638,62 @@ const Goose = (() => {
     raf = requestAnimationFrame(tick);
   }
 
+  // ---- mood memory ----
+  // The current anger (time left, fury, poke bonus, pink head) and the scattered icons are saved,
+  // so closing Retro 5 doesn't make the goose forget. Time is frozen while the app is closed;
+  // after 15 minutes away it is all forgotten, like the anger counter.
+  const MOOD_KEY = "retro5-goose-mood";
+  let lastMoodSave = 0;
+
+  function saveMood() {
+    const now = performance.now();
+    lastMoodSave = now;
+    const mood = {
+      savedAt: Date.now(),
+      angryLeft: angryUntil ? Math.max(0, angryUntil - now) : 0,
+      angerElapsed: angryUntil ? now - angerStart : 0,
+      fury, pokeBonus, angryPokes,
+      flushed: el.classList.contains("flushed"),
+      flushLevel,
+      scattered: [...scattered].map((a) => ({ id: a.dataset.id, t: a.style.transform })),
+      scatterLeft: scatterDeadline ? Math.max(0, scatterDeadline - now) : 0,
+    };
+    const empty = !mood.angryLeft && !mood.scattered.length;
+    try { empty ? localStorage.removeItem(MOOD_KEY) : localStorage.setItem(MOOD_KEY, JSON.stringify(mood)); } catch {}
+  }
+
+  function restoreMood() {
+    let mood = null;
+    try { mood = JSON.parse(localStorage.getItem(MOOD_KEY)); } catch {}
+    if (!mood || Date.now() - mood.savedAt > ANGER_WINDOW) return false;
+    const now = performance.now();
+    for (const { id, t } of mood.scattered || []) {
+      const a = document.querySelector(`.app[data-id="${id}"]`);
+      if (!a) continue;
+      a.style.transform = t;
+      a.classList.add("scattered");
+      scattered.add(a);
+    }
+    flushLevel = mood.flushLevel || 0;
+    el.querySelectorAll(".gs-blush").forEach((b) => (b.style.opacity = flushLevel));
+    if (mood.angryLeft > 0) {
+      // it remembers: turns to you, honks, and carries on where it left off
+      angryUntil = now + mood.angryLeft;
+      angerStart = now - mood.angerElapsed;
+      fury = !!mood.fury;
+      pokeBonus = mood.pokeBonus || 0;
+      angryPokes = mood.angryPokes || 0;
+      lastAngryHonk = now;
+      el.classList.add("angry");
+      el.classList.toggle("fury", fury);
+      view = "front";
+      task = { kind: "stand", face: "front", until: now + 800, then: rampage };
+    } else if (scattered.size) {
+      scheduleScatterReturn(mood.scatterLeft || SCATTER_MS);
+    }
+    return mood.angryLeft > 0;
+  }
+
   function start() {
     if (on) return;
     on = true;
@@ -636,6 +703,10 @@ const Goose = (() => {
     y = rand(b.top, b.bottom - SIZE);
     const s = randomSpot();
     task = { kind: "walk", tx: s.x, ty: s.y, speed: WALK };
+    if (restoreMood()) { // still angry: no waddling in, it is right there
+      x = s.x;
+      y = s.y;
+    }
     layer.append(el);
     last = performance.now();
     raf = requestAnimationFrame(tick);
@@ -650,6 +721,7 @@ const Goose = (() => {
     calmDown();
     dropCarried();
     restoreScattered();
+    try { localStorage.removeItem(MOOD_KEY); } catch {}
     food?.el.remove();
     food = null;
     task = null;
@@ -660,11 +732,26 @@ const Goose = (() => {
   el.addEventListener("pointerdown", (e) => e.stopPropagation());
   el.addEventListener("click", poke);
 
-  document.addEventListener("visibilitychange", () => {
-    if (!on) return;
+  // While Retro 5 is in the background the goose's clock stands still.
+  let hiddenAt = 0;
+  function freeze() {
+    if (!on || hiddenAt) return;
+    saveMood();
+    hiddenAt = performance.now();
     cancelAnimationFrame(raf);
-    if (!document.hidden) { last = performance.now(); raf = requestAnimationFrame(tick); }
-  });
+    clearTimeout(scatteredTimer);
+  }
+  function thaw() {
+    if (!on || !hiddenAt) return;
+    const shift = performance.now() - hiddenAt;
+    hiddenAt = 0;
+    if (angryUntil) { angryUntil += shift; angerStart += shift; lastAngryHonk += shift; }
+    if (scatterDeadline) scheduleScatterReturn(Math.max(0, scatterDeadline + shift - performance.now()));
+    last = performance.now();
+    raf = requestAnimationFrame(tick);
+  }
+  document.addEventListener("visibilitychange", () => (document.hidden ? freeze() : thaw()));
+  addEventListener("pagehide", freeze);
 
   let saved = null;
   try { saved = localStorage.getItem(KEY); } catch {}
