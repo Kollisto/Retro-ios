@@ -29,13 +29,16 @@ const Goose = (() => {
   const outline = (d) => `<path d="${d}" fill="${INK}" stroke="${INK}" stroke-width="3.2" stroke-linejoin="round"/>`;
   const fill = (d) => `<path d="${d}" fill="${WHITE}"/>`;
   // Goose legs: a short orange shank and a webbed three-toed foot.
-  const sideLeg = (cls, x) => `<g class="gs-leg ${cls}">
-      <rect x="${x - 1.4}" y="49" width="2.8" height="10.5" rx="1.2"/>
-      <path d="M${x - 3} 61.4 L${x - 1.8} 58.4 L${x + 1.4} 57.9 L${x + 9.6} 59.7 Q${x + 10.4} 61 ${x + 9.1} 61.5
-        Q${x + 7.7} 60.8 ${x + 6.6} 61.5 Q${x + 5.2} 60.8 ${x + 4.1} 61.5 Q${x + 2.8} 60.8 ${x + 1.7} 61.5Z"/></g>`;
-  const frontLeg = (cls, x) => `<g class="gs-leg ${cls}">
-      <rect x="${x - 1.4}" y="47" width="2.8" height="10.5" rx="1.2"/>
-      <path d="M${x} 56 L${x - 6} 61.6 Q${x - 4} 60.6 ${x - 2} 61.7 Q${x} 60.6 ${x + 2} 61.7 Q${x + 4} 60.6 ${x + 6} 61.6Z"/></g>`;
+  // The shank is a line from the hip (fixed to the body) to the ankle (moves with the foot),
+  // so the leg always stays attached to the body however far the foot is from it.
+  const shank = (x, hipY, ankleY) => `
+      <line class="gs-shank-o" x1="${x}" y1="${hipY}" x2="${x}" y2="${ankleY}" stroke="${INK}" stroke-width="5.4" stroke-linecap="round"/>
+      <line class="gs-shank" x1="${x}" y1="${hipY}" x2="${x}" y2="${ankleY}" stroke="${ORANGE}" stroke-width="2.8" stroke-linecap="round"/>`;
+  const sideLeg = (cls, x) => `<g class="gs-leg ${cls}" data-hip="${x},48" data-ankle="${x},58.6">${shank(x, 48, 58.6)}
+      <g class="gs-foot"><path d="M${x - 3} 61.4 L${x - 1.8} 58.4 L${x + 1.4} 57.9 L${x + 9.6} 59.7 Q${x + 10.4} 61 ${x + 9.1} 61.5
+        Q${x + 7.7} 60.8 ${x + 6.6} 61.5 Q${x + 5.2} 60.8 ${x + 4.1} 61.5 Q${x + 2.8} 60.8 ${x + 1.7} 61.5Z"/></g></g>`;
+  const frontLeg = (cls, x) => `<g class="gs-leg ${cls}" data-hip="${x},46" data-ankle="${x},56.5">${shank(x, 46, 56.5)}
+      <g class="gs-foot"><path d="M${x} 56 L${x - 6} 61.6 Q${x - 4} 60.6 ${x - 2} 61.7 Q${x} 60.6 ${x + 2} 61.7 Q${x + 4} 60.6 ${x + 6} 61.6Z"/></g></g>`;
   const legs = (leg, xa, xb) => `<g fill="${ORANGE}" stroke="${INK}" stroke-width="1.3" stroke-linejoin="round">${leg("gs-leg-a", xa)}${leg("gs-leg-b", xb)}</g>`;
   const shadow = `<ellipse cx="32" cy="61.6" rx="14" ry="2.2" fill="#000" opacity=".16"/>`;
   // front and back: an egg-shaped body with the neck rising from its middle
@@ -181,10 +184,29 @@ const Goose = (() => {
   const LEG_X = { side: [24, 32], front: [26, 38], back: [26, 38] }; // hips, in the drawing
   const feet = [{ planted: false }, { planted: false }];
 
+  // Moves a foot by (dx, dy) and stretches its shank from the hip to the new ankle position.
+  function setLeg(leg, dx, dy) {
+    leg.parts ||= {
+      lines: leg.querySelectorAll("line"),
+      foot: leg.querySelector(".gs-foot"),
+      hip: leg.dataset.hip.split(",").map(Number),
+      ankle: leg.dataset.ankle.split(",").map(Number),
+    };
+    const { lines, foot, hip, ankle } = leg.parts;
+    dy = Math.max(dy, hip[1] + 3 - ankle[1]); // the foot never climbs up into the body
+    for (const l of lines) {
+      l.setAttribute("x2", ankle[0] + dx);
+      l.setAttribute("y2", ankle[1] + dy);
+    }
+    foot.style.transform = dx || dy ? `translate(${dx}px, ${dy}px)` : "";
+  }
+
   function stride(mx, my, speed) {
     const [a, b, svg] = legsFor(view);
     if (!speed) {
-      a.style.transform = b.style.transform = svg.style.translate = "";
+      setLeg(a, 0, 0);
+      setLeg(b, 0, 0);
+      svg.style.translate = "";
       feet.forEach((f) => (f.planted = false));
       return;
     }
@@ -219,7 +241,7 @@ const Goose = (() => {
         dy = 0;
         lift = Math.sin(Math.PI * t) * (side ? 3 : 2.6);
       }
-      leg.style.transform = `translate(${dx}px, ${dy - lift + bob}px)`;
+      setLeg(leg, dx, dy - lift + bob);
     });
   }
 
