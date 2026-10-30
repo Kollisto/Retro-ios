@@ -359,16 +359,33 @@ function haptic() {
   else hapticLabel.click();
 }
 
+// Emergency exit: holding the Home button for 2 s sends the goose away, whatever it is up to.
+const EMERGENCY_HOLD_MS = 2000;
+let holdTimer = 0, heldOut = false;
+
 homeBtn.addEventListener("pointerdown", () => {
   homeBtn.classList.add("pressed");
   clickSound();
   haptic();
+  heldOut = false;
+  if (!Goose.active) return;
+  homeBtn.classList.add("holding"); // the ring fills up around the button
+  holdTimer = setTimeout(() => {
+    heldOut = true;
+    homeBtn.classList.remove("holding");
+    haptic();
+    Goose.emergencyExit();
+  }, EMERGENCY_HOLD_MS);
 });
 for (const type of ["pointerup", "pointercancel", "pointerleave"]) {
-  homeBtn.addEventListener(type, () => homeBtn.classList.remove("pressed"));
+  homeBtn.addEventListener(type, () => {
+    homeBtn.classList.remove("pressed", "holding");
+    clearTimeout(holdTimer);
+  });
 }
 homeBtn.addEventListener("click", (e) => {
   e.stopPropagation();
+  if (heldOut) return; // that press was the emergency exit, not a tap
   if (!sheet.hidden) closeSheet();
   else if (editing) setEditing(false);
   else Goose.feed();

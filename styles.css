@@ -480,3 +480,22 @@ body { position: relative; }
   to { transform: translate(var(--dx), 4px); opacity: 0; }
 }
 .goose-print.wet { filter: hue-rotate(170deg) saturate(2.5) brightness(.9); }
+
+/* emergency exit: a ring fills around the Home button while it is held */
+.home-btn { position: relative; }
+.home-btn::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(#ff5a4e calc(var(--hold, 0) * 360deg), transparent 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+  opacity: 0;
+  pointer-events: none;
+}
+@property --hold { syntax: "<number>"; inherits: false; initial-value: 0; }
+.home-btn.holding::after { opacity: 1; animation: hold-ring 2s linear forwards; }
+@keyframes hold-ring { from { --hold: 0; } to { --hold: 1; } }
+/* the goose vanishes in a puff */
+.goose.leaving { transition: opacity .35s ease, scale .35s ease; opacity: 0; scale: .4; }
