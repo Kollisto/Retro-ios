@@ -97,6 +97,9 @@ const Goose = (() => {
   let view = "side"; // side, front (walking down the screen) or back (walking up)
   let pokes = []; // recent poke times; several in a row make the goose angry
   let angryUntil = 0, lastAngryHonk = 0;
+  // an angry goose honks after one of three pauses, picked at random, so it isn't a steady drone
+  const ANGRY_HONK_GAPS = [650, 1500, 2800];
+  let angryHonkGap = ANGRY_HONK_GAPS[1];
 
   // ---- geometry ----
   const box = () => {
@@ -130,13 +133,14 @@ const Goose = (() => {
 
   // ---- sound ----
   let audio = null, honkTimer = 0;
-  function honk() {
+  function honk(pitch = 1) {
     try {
       if (navigator.audioSession) navigator.audioSession.type = "ambient";
       audio ||= new (window.AudioContext || window.webkitAudioContext)();
       const t0 = audio.currentTime;
       // a low, nasal honk with a slight tremble, like a real goose
-      for (const [start, f] of [[0, 260], [0.2, 240]]) {
+      for (const [start, base] of [[0, 260], [0.2, 240]]) {
+        const f = base * pitch;
         const t = t0 + start, dur = 0.17;
         const osc = audio.createOscillator();
         osc.type = "sawtooth";
@@ -600,7 +604,11 @@ const Goose = (() => {
     flush(dt);
     if (angryUntil) {
       if (now > angryUntil) calmDown();
-      else if (now - lastAngryHonk > 1100) { lastAngryHonk = now; honk(); }
+      else if (now - lastAngryHonk > angryHonkGap) {
+        lastAngryHonk = now;
+        angryHonkGap = ANGRY_HONK_GAPS[Math.floor(Math.random() * ANGRY_HONK_GAPS.length)];
+        honk(rand(0.9, 1.1)); // and a slightly different voice each time
+      }
     }
     if (!task) nextTask();
     if (task.kind === "walk" || task.kind === "fetch") {
