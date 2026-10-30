@@ -185,10 +185,13 @@ const Goose = (() => {
   let flushLevel = 0, blushEls = null;
   function flush(dt) {
     const calming = el.classList.contains("calming");
-    const target = fury ? 1 : 0;
+    const target = fury || el.classList.contains("flushed") ? 1 : 0;
     const rate = fury ? 1 / 1.2 : calming ? 1 / 5 : 1 / 0.4; // per second
     const next = flushLevel < target ? Math.min(target, flushLevel + rate * dt) : Math.max(target, flushLevel - rate * dt);
-    if (next === flushLevel) return;
+    if (next === flushLevel) {
+      if (calming && !flushLevel) el.classList.remove("calming");
+      return;
+    }
     flushLevel = next;
     blushEls ||= el.querySelectorAll(".gs-blush");
     blushEls.forEach((b) => (b.style.opacity = flushLevel));
@@ -424,6 +427,7 @@ const Goose = (() => {
     dir = f.x > x + SIZE / 2 ? 1 : -1; // turn to the food
     task = { kind: "peck", eating: f, bite: true, until: performance.now() + 6000 };
     if (scattered.size) restoreScattered(2600); // the icons creep back while it eats
+    el.classList.replace("flushed", "calming"); // and the pink starts to fade
   }
 
   function bite(t, now) {
@@ -444,21 +448,21 @@ const Goose = (() => {
       setTimeout(() => f.el.remove(), 260);
       if (food === f) food = null;
       task = { kind: "stand", until: now + 900 };
-      el.classList.remove("grumpy", "fury", "calming");
+      el.classList.remove("grumpy", "fury", "flushed"); // "calming" goes once the pink is gone
       wag(); // happy goose
     }
   }
 
   // ---- anger: three pokes within three seconds ----
-  // Anger lasts 5 s. Every time it is made angry again within a minute of the previous time,
+  // Anger lasts 5 s. Every time it is made angry again within a minute after the previous anger ended,
   // later angers last 10 s longer; that bonus counts angers of the last 15 minutes and is remembered
   // across launches. At the 1-minute cap it is a fury: grabbed icons stay scattered for a
   // minute after it calms down.
   const ANGER_KEY = "retro5-goose-anger";
   const ANGRY_MS = 5000, ANGRY_STEP = 10000, ANGRY_MAX = 60000, SCATTER_MS = 60000;
   const ANGER_WINDOW = 15 * 60000, MINUTE = 60000;
-  const ANGRY_POKE_MS = 5000;
-  let fury = false, angerStart = 0, angryPokes = 0;
+  const ANGRY_POKE_MS = 5000, POKE_BONUS_MAX = 15000; // pokes add at most +15 s to one anger
+  let fury = false, angerStart = 0, angryPokes = 0, pokeBonus = 0;
 
   function angerDuration() {
     const now = Date.now();
@@ -466,10 +470,19 @@ const Goose = (() => {
     try { events = JSON.parse(localStorage.getItem(ANGER_KEY)) || []; } catch {}
     events = events.filter((e) => now - e.t < ANGER_WINDOW);
     const prev = events[events.length - 1];
-    events.push({ t: now, quick: !!prev && now - prev.t < MINUTE });
+    events.push({ t: now, quick: !!prev && now - (prev.end || prev.t) < MINUTE });
     try { localStorage.setItem(ANGER_KEY, JSON.stringify(events)); } catch {}
     const quick = events.filter((e) => e.quick).length;
     return Math.min(ANGRY_MS + quick * ANGRY_STEP, ANGRY_MAX);
+  }
+
+  // remembers when the anger ended, for the "again within a minute" rule
+  function markAngerEnd() {
+    try {
+      const events = JSON.parse(localStorage.getItem(ANGER_KEY)) || [];
+      if (events.length) events[events.length - 1].end = Date.now();
+      localStorage.setItem(ANGER_KEY, JSON.stringify(events));
+    } catch {}
   }
 
   function enrage() {
@@ -477,7 +490,8 @@ const Goose = (() => {
     fury = ms >= ANGRY_MAX;
     angerStart = performance.now();
     angryPokes = 0;
-    el.classList.remove("grumpy", "calming");
+    pokeBonus = 0;
+    el.classList.remove("grumpy", "calming", "flushed");
     angryUntil = angerStart + ms;
     lastAngryHonk = performance.now();
     el.classList.add("angry");
@@ -521,9 +535,10 @@ const Goose = (() => {
     dropCarried(); // in a fury this leaves the icon lying with the others
     if (fury) {
       clearTimeout(scatteredTimer);
-      el.classList.add("calming");
+      el.classList.add("flushed"); // still pink until it starts eating
       fury = false;
     }
+    markAngerEnd();
     honk();
   }
 
@@ -532,9 +547,10 @@ const Goose = (() => {
     angryUntil = 0;
     pokes = [];
     angryPokes = 0;
-    el.classList.remove("angry", "fury", "grumpy", "calming");
+    el.classList.remove("angry", "fury", "grumpy", "calming", "flushed");
     dropCarried();
     if (fury) { fury = false; scatteredTimer = setTimeout(restoreScattered, SCATTER_MS); }
+    markAngerEnd();
     task = null;
   }
 
@@ -544,7 +560,8 @@ const Goose = (() => {
     const now = performance.now();
     pokes = [...pokes.filter((t) => now - t < 3000), now];
     if (angryUntil) { // poking an angry goose: every 2 pokes add 5 s, up to a minute ahead
-      if (++angryPokes % 2 === 0) {
+      if (++angryPokes % 2 === 0 && pokeBonus < POKE_BONUS_MAX) {
+        pokeBonus += ANGRY_POKE_MS;
         angryUntil = Math.min(angryUntil + ANGRY_POKE_MS, now + ANGRY_MAX);
         if (!fury && angryUntil - angerStart >= ANGRY_MAX) { fury = true; el.classList.add("fury"); }
       }
