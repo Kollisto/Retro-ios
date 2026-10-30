@@ -341,10 +341,6 @@ body { position: relative; }
   box-shadow: 0 1px 1px rgba(0, 0, 0, .35);
   transition: opacity .25s, transform .25s;
 }
-.goose-food i:nth-child(1) { left: 0; top: 4px; }
-.goose-food i:nth-child(2) { left: 7px; top: 0; }
-.goose-food i:nth-child(3) { left: 13px; top: 5px; }
-.goose-food i:nth-child(4) { left: 6px; top: 7px; }
 .goose-food i.eaten { opacity: 0; transform: scale(.3); }
 @keyframes thrown { from { transform: translateY(-160px) scale(1.4); opacity: 0; } 60% { opacity: 1; } }
 

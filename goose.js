@@ -322,7 +322,9 @@ const Goose = (() => {
     const fx = spot.x + SIZE / 2, fy = spot.y + PECK_DROP; // where the crumbs land
     const f = document.createElement("div");
     f.className = "goose-food";
-    f.innerHTML = "<i></i><i></i><i></i><i></i>";
+    const count = 1 + Math.floor(Math.random() * 4); // 1 to 4 crumbs, scattered a little
+    f.innerHTML = Array.from({ length: count }, () =>
+      `<i style="left:${rand(0, 15).toFixed(1)}px;top:${rand(0, 7).toFixed(1)}px"></i>`).join("");
     f.style.left = fx - 11 + "px";
     f.style.top = fy - 6 + "px";
     layer.append(f);
