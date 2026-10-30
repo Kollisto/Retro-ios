@@ -1,5 +1,5 @@
 // The goose: wanders over the home screen, blocks the icons it stands on, honks when poked
-// (and gets angry and grabs icons when poked three times), carries icons off for a moment,
+// (and gets angry and grabs icons when poked three times; see "anger" below), carries icons off for a moment,
 // leaves notes and footprints, and runs to food thrown with the Home button (food calms it). Toggled by the "Гусь" icon; the on/off choice is remembered.
 
 const Goose = (() => {
@@ -302,9 +302,29 @@ const Goose = (() => {
     if (!carried) return;
     const a = carried.el;
     carried = null;
+    if (fury) { // in a fury the icon stays where the goose dropped it
+      a.style.transform = a.style.transform.replace(/rotate\([^)]*\)/, "");
+      a.classList.remove("carried");
+      a.classList.add("scattered");
+      scattered.add(a);
+      return;
+    }
     a.style.transition = "transform .45s ease";
     a.style.transform = "";
     setTimeout(() => { a.classList.remove("carried"); a.style.transition = ""; }, 460);
+  }
+
+  // icons left lying around after a fury slide back to their places
+  let scatteredTimer = 0;
+  const scattered = new Set();
+  function restoreScattered() {
+    clearTimeout(scatteredTimer);
+    for (const a of scattered) {
+      a.style.transition = "transform .6s ease";
+      a.style.transform = "";
+      setTimeout(() => { a.classList.remove("scattered"); a.style.transition = ""; }, 620);
+    }
+    scattered.clear();
   }
 
   function startNote() {
@@ -392,12 +412,34 @@ const Goose = (() => {
   }
 
   // ---- anger: three pokes within three seconds ----
-  const ANGRY_MS = 5000;
+  // Anger lasts 5 s. Every time it is made angry again within a minute of the previous time,
+  // later angers last 2 s longer; that bonus counts angers of the last hour and is remembered
+  // across launches. At the 1-minute cap it is a fury: grabbed icons stay scattered for a
+  // minute after it calms down.
+  const ANGER_KEY = "retro5-goose-anger";
+  const ANGRY_MS = 5000, ANGRY_STEP = 2000, ANGRY_MAX = 60000, SCATTER_MS = 60000;
+  const HOUR = 3600000, MINUTE = 60000;
+  let fury = false;
+
+  function angerDuration() {
+    const now = Date.now();
+    let events = [];
+    try { events = JSON.parse(localStorage.getItem(ANGER_KEY)) || []; } catch {}
+    events = events.filter((e) => now - e.t < HOUR);
+    const prev = events[events.length - 1];
+    events.push({ t: now, quick: !!prev && now - prev.t < MINUTE });
+    try { localStorage.setItem(ANGER_KEY, JSON.stringify(events)); } catch {}
+    const quick = events.filter((e) => e.quick).length;
+    return Math.min(ANGRY_MS + quick * ANGRY_STEP, ANGRY_MAX);
+  }
 
   function enrage() {
-    angryUntil = performance.now() + ANGRY_MS;
+    const ms = angerDuration();
+    fury = ms >= ANGRY_MAX;
+    angryUntil = performance.now() + ms;
     lastAngryHonk = performance.now();
     el.classList.add("angry");
+    el.classList.toggle("fury", fury);
     dropCarried();
     honk();
     // first a short charge down the screen, then it goes for the icons
@@ -408,7 +450,8 @@ const Goose = (() => {
   function rampage() {
     if (!angryUntil) return;
     const s = screenEl.getBoundingClientRect();
-    const icons = [...document.querySelectorAll("#grid .app, #dock .app")].filter((a) => a.dataset.id !== "goose");
+    const icons = [...document.querySelectorAll("#grid .app, #dock .app")]
+      .filter((a) => a.dataset.id !== "goose" && !scattered.has(a));
     // the nearest icon gets grabbed
     let target = null, best = Infinity;
     for (const a of icons) {
@@ -416,7 +459,11 @@ const Goose = (() => {
       const d = Math.hypot(r.left - s.left - x, r.top - s.top - y);
       if (d < best && d > 20) { best = d; target = a; }
     }
-    if (!target) return;
+    if (!target) { // nothing left to grab: storm around instead
+      const spot = randomSpot();
+      task = { kind: "walk", tx: spot.x, ty: spot.y, speed: RUN, then: rampage };
+      return;
+    }
     const r = target.getBoundingClientRect();
     task = { kind: "fetch", target, angry: true, tx: r.left - s.left + r.width / 2 - (dir > 0 ? 50 : 14), ty: r.top - s.top - 4, speed: RUN * 1.15 };
   }
@@ -425,8 +472,9 @@ const Goose = (() => {
     if (!angryUntil) return;
     angryUntil = 0;
     pokes = [];
-    el.classList.remove("angry");
+    el.classList.remove("angry", "fury");
     dropCarried();
+    if (fury) { fury = false; scatteredTimer = setTimeout(restoreScattered, SCATTER_MS); }
     task = null;
   }
 
@@ -515,6 +563,7 @@ const Goose = (() => {
     cancelAnimationFrame(raf);
     calmDown();
     dropCarried();
+    restoreScattered();
     food?.el.remove();
     food = null;
     task = null;
@@ -539,6 +588,7 @@ const Goose = (() => {
     toggle: () => (on ? stop() : start()),
     feed,
     get active() { return on; },
-    releaseIcon: dropCarried,
+    // edit mode needs every icon in its slot
+    releaseIcon: () => { fury = false; dropCarried(); restoreScattered(); },
   };
 })();

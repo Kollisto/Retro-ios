@@ -388,3 +388,8 @@ body { position: relative; }
   12% { transform: rotate(-22deg); } 26% { transform: rotate(22deg); } 40% { transform: rotate(-18deg); }
   54% { transform: rotate(18deg); } 68% { transform: rotate(-10deg); } 82% { transform: rotate(8deg); }
 }
+
+/* icons the goose left lying around in a fury */
+.app.scattered { position: relative; z-index: 18; }
+/* a furious goose turns a little red */
+.goose.fury .gs-view { filter: sepia(.5) saturate(4) hue-rotate(-30deg) brightness(.97); }
