@@ -306,25 +306,10 @@ body { position: relative; }
 .goose g { transform-box: view-box; }
 .gs-neck { transform-origin: 37px 42px; transition: transform .25s ease; }
 .goose.pecking .gs-neck { animation: peck .7s ease-in-out infinite; }
-@keyframes peck { 0%, 100% { transform: rotate(0); } 45%, 60% { transform: rotate(75deg); } }
+@keyframes peck { 0%, 100% { transform: rotate(0); } 45%, 60% { transform: rotate(82deg); } }
 .gs-beak-bottom { transform-origin: 50.5px 17px; transition: transform .08s; }
 .goose.honking .gs-beak-bottom { transform: rotate(24deg); }
 .goose.honking .gs-neck { transform: rotate(-12deg); }
-/* Alternating gait: one foot swings forward lifted while the other is planted and slides back */
-.goose { --step: .44s; }
-.goose.running { --step: .22s; }
-.goose.walking .gs-leg { animation: stride-side var(--step) linear infinite; }
-.goose.walking .gs-leg-b { animation-delay: calc(var(--step) / -2); }
-.goose.walking .view-front .gs-leg, .goose.walking .view-back .gs-leg { animation-name: stride-lift; }
-@keyframes stride-side {
-  0% { transform: translate(-2.2px, 0); }
-  25% { transform: translate(0, -2.6px); }
-  50% { transform: translate(2.2px, 0); }
-  100% { transform: translate(-2.2px, 0); }
-}
-@keyframes stride-lift { 0%, 50%, 100% { transform: translateY(0); } 25% { transform: translateY(-3px); } }
-.goose.walking svg { animation: waddle calc(var(--step) / 2) ease-in-out infinite; }
-@keyframes waddle { 50% { translate: 0 -1.5px; } }
 
 .goose-print {
   position: absolute;

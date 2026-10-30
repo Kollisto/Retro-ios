@@ -26,17 +26,23 @@ const Goose = (() => {
   // outline copy underneath, fill copy on top
   const outline = (d) => `<path d="${d}" fill="${INK}" stroke="${INK}" stroke-width="3.2" stroke-linejoin="round"/>`;
   const fill = (d) => `<path d="${d}" fill="${WHITE}"/>`;
-  const boot = (cls, d) => `<path class="gs-leg ${cls}" d="${d}"/>`;
-  const legs = (a, b) => `<g fill="${ORANGE}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round">${boot("gs-leg-a", a)}${boot("gs-leg-b", b)}</g>`;
-  const shadow = `<ellipse cx="32" cy="59" rx="14" ry="2.2" fill="#000" opacity=".16"/>`;
+  // Goose legs: a short orange shank and a webbed three-toed foot.
+  const sideLeg = (cls, x) => `<g class="gs-leg ${cls}">
+      <rect x="${x - 1.4}" y="49" width="2.8" height="10.5" rx="1.2"/>
+      <path d="M${x - 3} 61.4 L${x - 1.8} 58.4 L${x + 1.4} 57.9 L${x + 9.6} 59.7 Q${x + 10.4} 61 ${x + 9.1} 61.5
+        Q${x + 7.7} 60.8 ${x + 6.6} 61.5 Q${x + 5.2} 60.8 ${x + 4.1} 61.5 Q${x + 2.8} 60.8 ${x + 1.7} 61.5Z"/></g>`;
+  const frontLeg = (cls, x) => `<g class="gs-leg ${cls}">
+      <rect x="${x - 1.4}" y="47" width="2.8" height="10.5" rx="1.2"/>
+      <path d="M${x} 56 L${x - 6} 61.6 Q${x - 4} 60.6 ${x - 2} 61.7 Q${x} 60.6 ${x + 2} 61.7 Q${x + 4} 60.6 ${x + 6} 61.6Z"/></g>`;
+  const legs = (leg, xa, xb) => `<g fill="${ORANGE}" stroke="${INK}" stroke-width="1.3" stroke-linejoin="round">${leg("gs-leg-a", xa)}${leg("gs-leg-b", xb)}</g>`;
+  const shadow = `<ellipse cx="32" cy="61.6" rx="14" ry="2.2" fill="#000" opacity=".16"/>`;
   // front and back: an egg-shaped body with the neck rising from its middle
   const EGG = "M32 22 Q46.5 24 47 38.5 Q47 51 32 51.5 Q17 51 17 38.5 Q17.5 24 32 22Z";
   const NECK_UP = "M26.5 33 Q25.5 19 26.5 13.5 Q27.5 5.5 32 5.5 Q36.5 5.5 37.5 13.5 Q38.5 19 37.5 33Z";
-  const FRONT_BOOTS = ["M22.5 48 h6.5 v8.4 q0 1.6 -1.6 1.6 h-3.3 q-1.6 0 -1.6 -1.6Z", "M35 48 h6.5 v8.4 q0 1.6 -1.6 1.6 h-3.3 q-1.6 0 -1.6 -1.6Z"];
   el.innerHTML = `
     <svg class="gs-view view-side" viewBox="0 0 64 64">
       ${shadow}
-      ${legs("M21 52 h6 v4.5 h4 q1.2 0 1.2 1.2 v.8 h-11.2Z", "M30 52 h6 v4.5 h4 q1.2 0 1.2 1.2 v.8 h-11.2Z")}
+      ${legs(sideLeg, 24, 32)}
       ${outline(BODY)}
       <g class="gs-neck">${outline(NECK)}</g>
       ${fill(BODY)}
@@ -52,7 +58,7 @@ const Goose = (() => {
     </svg>
     <svg class="gs-view view-front" viewBox="0 0 64 64">
       ${shadow}
-      ${legs(...FRONT_BOOTS)}
+      ${legs(frontLeg, 26, 38)}
       ${outline(EGG)}${outline(NECK_UP)}${fill(EGG)}${fill(NECK_UP)}
       <path d="M19.5 36 Q20.5 44 26 48 M44.5 36 Q43.5 44 38 48" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>
       <circle cx="29.2" cy="11.2" r="1.15" fill="${INK}"/><circle cx="34.8" cy="11.2" r="1.15" fill="${INK}"/>
@@ -62,7 +68,7 @@ const Goose = (() => {
     </svg>
     <svg class="gs-view view-back" viewBox="0 0 64 64">
       ${shadow}
-      ${legs(...FRONT_BOOTS)}
+      ${legs(frontLeg, 26, 38)}
       ${outline(EGG)}${outline(NECK_UP)}${outline("M28 47.5 Q32 55 36 47.5Z")}
       ${fill(EGG)}${fill(NECK_UP)}${fill("M28 47.5 Q32 55 36 47.5Z")}
       <path d="M24.5 31 Q21.5 41 29.5 48 M39.5 31 Q42.5 41 34.5 48" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>
@@ -73,7 +79,8 @@ const Goose = (() => {
   let task = null; // { kind, ... }
   let carried = null; // the .app element in the beak
   let food = null; // { el, x, y }
-  let stepClock = 0, printClock = 0;
+  let gait = 0; // gait: position in the stride cycle, 0..1, advanced by distance walked
+  const legsOf = {};
   let lastCarry = 0, lastNote = 0;
   let view = "side"; // side, front (walking down the screen) or back (walking up)
   let pokes = []; // recent poke times; several in a row make the goose angry
@@ -147,12 +154,69 @@ const Goose = (() => {
     setTimeout(() => el.classList.remove("honking"), 380);
   }
 
+  // ---- walking ----
+  // The stride is driven by the distance covered, so the planted foot stays still on the ground
+  // while the body passes over it (no sliding), and faster movement means quicker, longer steps.
+  const WALK_STRIDE = 16, RUN_STRIDE = 26; // px covered per full cycle (one step of each foot)
+
+  function legsFor(v) {
+    if (!legsOf[v]) {
+      const svg = el.querySelector(".view-" + v);
+      legsOf[v] = [svg.querySelector(".gs-leg-a"), svg.querySelector(".gs-leg-b"), svg];
+    }
+    return legsOf[v];
+  }
+
+  const LEG_X = { side: [24, 32], front: [26, 38], back: [26, 38] }; // hips, in the drawing
+  const feet = [{ planted: false }, { planted: false }];
+
+  function stride(mx, my, speed) {
+    const [a, b, svg] = legsFor(view);
+    if (!speed) {
+      a.style.transform = b.style.transform = svg.style.translate = "";
+      feet.forEach((f) => (f.planted = false));
+      return;
+    }
+    const side = view === "side";
+    const len = speed > WALK * 1.5 ? RUN_STRIDE : WALK_STRIDE;
+    const reach = len / 4;
+    // side view steps with the horizontal motion, front/back with the vertical
+    const along = side ? Math.abs(mx) : Math.abs(my);
+    gait = (gait + Math.max(along, Math.hypot(mx, my) * 0.3) / len) % 1;
+    // the body bobs once per step; the feet don't (they are on the ground)
+    const bob = Math.abs(Math.sin(gait * Math.PI * 2)) * 1.3;
+    svg.style.translate = `0 ${-bob}px`;
+    [a, b].forEach((leg, i) => {
+      const p = (gait + i * 0.5) % 1, foot = feet[i];
+      const hipX = x + (dir > 0 || !side ? LEG_X[view][i] : SIZE - LEG_X[view][i]);
+      let dx, dy, lift = 0;
+      if (p < 0.5) {
+        // planted: the foot stays where it was put down while the body moves over it
+        if (!foot.planted) {
+          foot.planted = true;
+          foot.wx = hipX + (side ? reach * dir : 0);
+          foot.wy = y;
+          footprint(foot.wx, y);
+        }
+        dx = side ? Math.max(-reach * 1.6, Math.min(reach * 1.6, (foot.wx - hipX) * dir)) : 0;
+        dy = Math.max(-len / 2 - 2, Math.min(len / 2 + 2, foot.wy - y));
+      } else {
+        // swinging forward through the air
+        foot.planted = false;
+        const t = (p - 0.5) / 0.5;
+        dx = side ? -reach + t * 2 * reach : 0;
+        dy = 0;
+        lift = Math.sin(Math.PI * t) * (side ? 3 : 2.6);
+      }
+      leg.style.transform = `translate(${dx}px, ${dy - lift + bob}px)`;
+    });
+  }
+
   // ---- footprints ----
-  function footprint() {
+  function footprint(fx, fy) {
     const p = document.createElement("div");
     p.className = "goose-print";
-    const side = (printClock++ % 2 ? 1 : -1) * 3;
-    p.style.transform = `translate(${x + 32 - 4}px, ${y + 57 + side}px) rotate(${dir > 0 ? 90 : -90}deg)`;
+    p.style.transform = `translate(${fx - 5}px, ${fy + 57}px) rotate(${view === "side" ? (dir > 0 ? 90 : -90) : view === "front" ? 180 : 0}deg)`;
     tracks.append(p);
     setTimeout(() => p.remove(), 2600);
   }
@@ -232,7 +296,7 @@ const Goose = (() => {
   }
 
   // With the neck lowered, the beak tip sits this far from the goose's left edge (facing right).
-  const PECK_REACH = 68, PECK_DROP = 56;
+  const PECK_REACH = 67, PECK_DROP = 59;
 
   function feed() {
     if (!on) return;
@@ -350,18 +414,20 @@ const Goose = (() => {
         else done.then?.();
       } else {
         const step = Math.min(dist, task.speed * dt);
-        x += (dx / dist) * step;
-        y += (dy / dist) * step;
+        const mx = (dx / dist) * step, my = (dy / dist) * step;
+        x += mx;
+        y += my;
         if (Math.abs(dx) > 1) dir = dx > 0 ? 1 : -1;
         // mostly vertical moves show the goose from the front or from behind
-        view = Math.abs(dy) > Math.abs(dx) * 1.4 ? (dy > 0 ? "front" : "back") : "side";
+        const nextView = Math.abs(dy) > Math.abs(dx) * 1.4 ? (dy > 0 ? "front" : "back") : "side";
+        if (nextView !== view) { stride(0, 0, 0); view = nextView; }
         el.classList.add("walking");
         el.classList.toggle("running", task.speed > WALK * 1.5);
-        stepClock += step;
-        if (stepClock > 18) { stepClock = 0; footprint(); }
+        stride(mx, my, task.speed);
       }
     } else {
       el.classList.remove("walking", "running");
+      stride(0, 0, 0);
       if (task.kind === "peck") view = "side"; // pecking is drawn from the side
       setPose(task.kind === "peck" ? "peck" : "stand");
       if (now > task.until) task = null;

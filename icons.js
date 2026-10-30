@@ -249,8 +249,10 @@ const ICONS = {
     <defs>${lin("gi-bg", [[0, "#4d74a3"], [1, "#2f527e"]])}</defs>
     ${bg("gi-bg")}
     <ellipse cx="29" cy="52" rx="13" ry="2" fill="#000" opacity=".18"/>
-    <g fill="#ef5a24" stroke="#1d1d1d" stroke-width="1.5" stroke-linejoin="round">
-      <path d="M22 46 h5 v4 h3.5 q1 0 1 1 v.6 h-9.5Z"/><path d="M30 46 h5 v4 h3.5 q1 0 1 1 v.6 h-9.5Z"/>
+    <g fill="#ef5a24" stroke="#1d1d1d" stroke-width="1.2" stroke-linejoin="round">${[24, 31].map((x) => `
+      <rect x="${x - 1.2}" y="44" width="2.4" height="6.5" rx="1"/>
+      <path d="M${x - 2.3} 51.8 L${x - 1.4} 49.6 L${x + 1} 49.3 L${x + 6.6} 50.7 Q${x + 7.2} 51.6 ${x + 6.3} 51.9
+        Q${x + 5.2} 51.4 ${x + 4.4} 51.9 Q${x + 3.4} 51.4 ${x + 2.6} 51.9Z"/>`).join("")}
     </g>
     <g stroke="#1d1d1d" stroke-width="3" stroke-linejoin="round" fill="#1d1d1d">
       <path d="M12 36 Q9.5 33 13 32.5 Q18 27 29 28 Q38.5 29 41 35 Q43 44 33 47 Q21 49 15 43 Q11 41 12 36Z"/>
