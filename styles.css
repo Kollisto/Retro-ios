@@ -303,6 +303,8 @@ body { position: relative; }
   pointer-events: auto;
 }
 .goose svg { display: block; width: 100%; height: 100%; overflow: visible; }
+/* a generous invisible hit area, so a poke at the goose doesn't land on the icon under it */
+.goose::before { content: ""; position: absolute; inset: -14px -16px -8px; border-radius: 40%; }
 .goose g { transform-box: view-box; }
 .gs-neck { transform-origin: 37px 42px; transition: transform .25s ease; }
 .goose.pecking .gs-neck { animation: peck .7s ease-in-out infinite; }

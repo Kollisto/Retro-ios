@@ -414,11 +414,11 @@ const Goose = (() => {
 
   // ---- anger: three pokes within three seconds ----
   // Anger lasts 5 s. Every time it is made angry again within a minute of the previous time,
-  // later angers last 2 s longer; that bonus counts angers of the last hour and is remembered
+  // later angers last 10 s longer; that bonus counts angers of the last hour and is remembered
   // across launches. At the 1-minute cap it is a fury: grabbed icons stay scattered for a
   // minute after it calms down.
   const ANGER_KEY = "retro5-goose-anger";
-  const ANGRY_MS = 5000, ANGRY_STEP = 2000, ANGRY_MAX = 60000, SCATTER_MS = 60000;
+  const ANGRY_MS = 5000, ANGRY_STEP = 10000, ANGRY_MAX = 60000, SCATTER_MS = 60000;
   const HOUR = 3600000, MINUTE = 60000;
   let fury = false;
 
