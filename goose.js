@@ -1,6 +1,8 @@
 // The goose: wanders over the home screen, blocks the icons it stands on, honks when poked
 // (and gets angry and grabs icons when poked three times; see "anger" below), carries icons off for a moment,
-// leaves notes and footprints, and runs to food thrown with the Home button (food calms it). Toggled by the "Гусь" icon; the on/off choice is remembered.
+// leaves notes and footprints, and runs to food thrown with the Home button (food calms it).
+// It also sleeps (at night, or naps when left alone), gets jealous of the apps you open, and
+// splashes in puddles. Toggled by the "Гусь" icon; the on/off choice is remembered.
 
 const Goose = (() => {
   const KEY = "retro5-goose";
@@ -50,6 +52,7 @@ const Goose = (() => {
   const blush = (d, id) => `<path class="gs-blush" d="${d}" fill="url(#${id})"/>`;
   el.innerHTML = `
     <div class="goose-sparks"></div>
+    <div class="goose-zzz"></div>
     <svg class="gs-view view-side" viewBox="0 0 64 64">${blushGrad("gs-pink-s")}
       ${shadow}
       ${legs(sideLeg, 24, 32)}
@@ -64,7 +67,8 @@ const Goose = (() => {
           <path class="gs-beak-bottom" d="M50.5 16.5 Q55 16.5 57 17.6 Q54.5 19.6 50 19.2Z"/>
           <path class="gs-beak-top" d="M50 12.4 Q56 12 59 14.6 Q56.5 17.4 50.2 17.6Z"/>
         </g>
-        <circle cx="46" cy="14.6" r="1.25" fill="${INK}"/>
+        <circle class="gs-eye" cx="46" cy="14.6" r="1.25" fill="${INK}"/>
+        <path class="gs-eye-shut" d="M44.4 14.4 Q46 16.2 47.6 14.4" fill="none" stroke="${INK}" stroke-width="1.3" stroke-linecap="round"/>
         <path class="gs-brow" d="M43.6 10.8 L48.6 12.9" stroke="${INK}" stroke-width="1.6" stroke-linecap="round"/>
       </g>
     </svg>
@@ -94,6 +98,7 @@ const Goose = (() => {
   let gait = 0; // gait: position in the stride cycle, 0..1, advanced by distance walked
   const legsOf = {};
   let lastCarry = 0, lastNote = 0;
+  let lastInteraction = performance.now(); // pokes, food, coming back from an app
   let view = "side"; // side, front (walking down the screen) or back (walking up)
   let pokes = []; // recent poke times; several in a row make the goose angry
   let angryUntil = 0, lastAngryHonk = 0;
@@ -290,10 +295,245 @@ const Goose = (() => {
   // ---- footprints ----
   function footprint(fx, fy) {
     const p = document.createElement("div");
-    p.className = "goose-print";
+    p.className = "goose-print" + (performance.now() < wetUntil ? " wet" : "");
     p.style.transform = `translate(${fx - 5}px, ${fy + 57}px) rotate(${view === "side" ? (dir > 0 ? 90 : -90) : view === "front" ? 180 : 0}deg)`;
     tracks.append(p);
     setTimeout(() => p.remove(), 2600);
+  }
+
+  // ---- sleep ----
+  // At night (23:00-7:00) the goose sleeps; in the daytime it naps after 3 quiet minutes.
+  // Woken by a poke it is startled and touchy (two pokes are enough to anger it for 30 s).
+  const NAP_AFTER = 3 * 60000, DROWSY_MS = 30000;
+  const WOKE_KEY = "retro5-goose-woke";
+  let sleeping = false, sleepKind = "", wakeAt = 0, noSleepUntil = 0, drowsyUntil = 0, lastZ = 0;
+  const isNight = () => { const h = new Date().getHours(); return h >= 23 || h < 7; };
+  const zzzEl = el.querySelector(".goose-zzz");
+
+  function sleepy(now) {
+    return !angryUntil && !food && !carried && !puddle && now > noSleepUntil &&
+      (isNight() || now - lastInteraction > NAP_AFTER);
+  }
+
+  function fallAsleep(now) {
+    sleeping = true;
+    sleepKind = isNight() ? "night" : "nap";
+    wakeAt = sleepKind === "nap" ? now + rand(60000, 120000) : 0;
+    view = "side";
+    stride(0, 0, 0);
+    el.classList.add("sleeping");
+    task = { kind: "sleep" };
+  }
+
+  function wakeUp(how) {
+    if (!sleeping) return;
+    const now = performance.now();
+    sleeping = false;
+    el.classList.remove("sleeping");
+    zzzEl.replaceChildren();
+    noSleepUntil = now + (isNight() ? 60000 : 0);
+    lastInteraction = now;
+    if (how === "poke") { // startled awake, and touchy for a while
+      drowsyUntil = now + DROWSY_MS;
+      el.classList.add("startled");
+      setTimeout(() => el.classList.remove("startled"), 450);
+      honk(1.15);
+      task = { kind: "stand", until: now + 700 };
+    } else if (how === "food") {
+      task = null;
+    } else { // morning or the end of a nap: a good stretch
+      stretch();
+    }
+  }
+
+  function stretch() {
+    el.classList.add("stretching");
+    wag();
+    setTimeout(() => { el.classList.remove("stretching"); honk(0.95); }, 1600);
+    task = { kind: "stand", until: performance.now() + 2000 };
+    try { localStorage.setItem(WOKE_KEY, new Date().toDateString()); } catch {}
+  }
+
+  function snooze(now) {
+    if (now - lastZ > 1400) {
+      lastZ = now;
+      const z = document.createElement("i");
+      z.textContent = "z";
+      z.style.left = (dir > 0 ? 6 : 40) + "px";
+      zzzEl.append(z);
+      setTimeout(() => z.remove(), 2600);
+    }
+    if (sleepKind === "nap" && now > wakeAt) wakeUp("nap");
+    if (sleepKind === "night" && !isNight()) wakeUp("morning");
+  }
+
+  // ---- jealousy ----
+  // Coming back from an app, the goose runs to that app's icon and hisses at it, and sometimes
+  // drags the rival off into a corner. The app opened most this week gets guarded now and then.
+  const JEALOUS_KEY = "retro5-goose-jealous";
+  const WEEK = 7 * 24 * 3600000;
+  let pendingJealous = null, lastGuard = 0;
+
+  function launches() {
+    let data = {};
+    try { data = JSON.parse(localStorage.getItem(JEALOUS_KEY)) || {}; } catch {}
+    const now = Date.now();
+    for (const id of Object.keys(data)) {
+      data[id] = data[id].filter((t) => now - t < WEEK);
+      if (!data[id].length) delete data[id];
+    }
+    return data;
+  }
+
+  function noticeLaunch(id) {
+    if (!on || id === "goose" || id === "refresh") return;
+    const data = launches();
+    (data[id] ||= []).push(Date.now());
+    try { localStorage.setItem(JEALOUS_KEY, JSON.stringify(data)); } catch {}
+    pendingJealous = id;
+  }
+
+  function favourite() {
+    const data = launches();
+    const [id, times] = Object.entries(data).sort((a, b) => b[1].length - a[1].length)[0] || [];
+    return times && times.length >= 5 ? id : null;
+  }
+
+  function onReturn() {
+    const id = pendingJealous;
+    pendingJealous = null;
+    if (!on || !id) return;
+    lastInteraction = performance.now();
+    if (angryUntil || sleeping) return;
+    setTimeout(() => confront(id, Math.random() < 0.35), 500);
+  }
+
+  // walks up beside an icon, facing it
+  function approach(target, speed, then) {
+    const s = screenEl.getBoundingClientRect(), r = target.getBoundingClientRect();
+    const iconX = r.left - s.left, iconY = r.top - s.top;
+    const fromLeft = x + SIZE / 2 < iconX + r.width / 2;
+    const face = fromLeft ? 1 : -1;
+    task = {
+      kind: "walk", speed,
+      tx: fromLeft ? iconX - 50 : iconX + r.width - 14, ty: iconY + r.height / 2 - 34,
+      then: () => { dir = face; then(); },
+    };
+  }
+
+  function confront(id, dragOff) {
+    const target = document.querySelector(`.app[data-id="${id}"]`);
+    if (!target || angryUntil || sleeping || scattered.has(target)) return;
+    dropCarried();
+    approach(target, RUN, () => {
+      hiss();
+      task = { kind: "stand", hissing: true, until: performance.now() + 1500,
+        then: () => { if (dragOff) dragToCorner(target); } };
+    });
+  }
+
+  function dragToCorner(target) {
+    const s = screenEl.getBoundingClientRect(), r = target.getBoundingClientRect();
+    carried = { el: target, base: { left: r.left - s.left, top: r.top - s.top, width: r.width } };
+    target.classList.add("carried");
+    target.style.transition = "none";
+    const b = box();
+    const corner = { x: x < (b.left + b.right) / 2 ? b.left : b.right, y: b.bottom - SIZE };
+    task = { kind: "walk", tx: corner.x, ty: corner.y, speed: WALK * 1.4,
+      then: () => { honk(); task = { kind: "stand", until: performance.now() + 2500, then: dropCarried }; } };
+  }
+
+  function guard(id) {
+    const target = document.querySelector(`.app[data-id="${id}"]`);
+    if (!target) return false;
+    lastGuard = performance.now();
+    approach(target, WALK * 1.3, () => {
+      task = { kind: "stand", until: performance.now() + 3500, then: () => {
+        hiss();
+        task = { kind: "stand", hissing: true, until: performance.now() + 1200 };
+      } };
+    });
+    return true;
+  }
+
+  function hiss() {
+    el.classList.add("hissing");
+    setTimeout(() => el.classList.remove("hissing"), 1300);
+    try {
+      if (navigator.audioSession) navigator.audioSession.type = "ambient";
+      audio ||= new (window.AudioContext || window.webkitAudioContext)();
+      const t = audio.currentTime, len = Math.floor(audio.sampleRate * 0.9);
+      const buf = audio.createBuffer(1, len, audio.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      const src = audio.createBufferSource();
+      src.buffer = buf;
+      const band = audio.createBiquadFilter();
+      band.type = "bandpass";
+      band.frequency.value = 3200;
+      band.Q.value = 0.8;
+      const gain = audio.createGain();
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.35, t + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.85);
+      src.connect(band).connect(gain).connect(audio.destination);
+      src.start(t);
+    } catch {}
+  }
+
+  // ---- puddles ----
+  // Now and then (more often when it is raining outside) a puddle appears; the goose hops in,
+  // splashes about, leaves wet footprints for a while, and the puddle dries up.
+  let puddle = null, lastPuddle = performance.now(), wetUntil = 0, lastDrop = 0;
+  const raining = () => typeof WEATHER_NOW !== "undefined" && !!WEATHER_NOW && ["rain", "storm"].includes(WEATHER_NOW.kind);
+
+  function makePuddle() {
+    const spot = randomSpot();
+    const p = document.createElement("div");
+    p.className = "goose-puddle";
+    const px = spot.x + 28, py = spot.y + 60; // where the goose's feet will be
+    p.style.left = px - 30 + "px";
+    p.style.top = py - 9 + "px";
+    tracks.append(p);
+    puddle = { el: p, x: px, y: py };
+    lastPuddle = performance.now();
+    setTimeout(() => dryUp(puddle && puddle.el === p ? puddle : null), 40000); // nobody came
+    return puddle;
+  }
+
+  function dryUp(pd) {
+    if (!pd) return;
+    pd.el.classList.add("drying");
+    setTimeout(() => pd.el.remove(), 5000);
+    if (puddle === pd) puddle = null;
+  }
+
+  function goSplash() {
+    const pd = puddle || makePuddle();
+    task = { kind: "walk", tx: pd.x - 28, ty: pd.y - 60, speed: WALK * 1.4, then: () => splash(pd) };
+  }
+
+  function splash(pd) {
+    view = "side";
+    el.classList.add("splashing");
+    honk(1.05);
+    task = { kind: "stand", splash: true, until: performance.now() + 2600, then: () => {
+      el.classList.remove("splashing");
+      wetUntil = performance.now() + 9000;
+      wag();
+      dryUp(pd);
+    } };
+  }
+
+  function droplet() {
+    const d = document.createElement("i");
+    d.className = "goose-drop";
+    d.style.left = x + 28 + rand(-8, 8) + "px";
+    d.style.top = y + 56 + "px";
+    d.style.setProperty("--dx", rand(-34, 34) + "px");
+    d.style.setProperty("--dy", -rand(10, 26) + "px");
+    layer.append(d);
+    setTimeout(() => d.remove(), 650);
   }
 
   // ---- things the goose does ----
@@ -301,8 +541,13 @@ const Goose = (() => {
     dropCarried(); // whatever happened, an icon never stays in the beak between tasks
     if (angryUntil) return rampage();
     const now = performance.now();
+    if (sleepy(now)) return fallAsleep(now);
     const editing = document.body.classList.contains("editing");
     const r = Math.random();
+    const puddleGap = raining() ? 40000 : 120000;
+    if (!editing && now - lastPuddle > puddleGap && r < (raining() ? 0.3 : 0.1)) return goSplash();
+    const fav = favourite();
+    if (!editing && fav && now - lastGuard > 60000 && r > 0.9 && guard(fav)) return;
     if (!editing && now - lastCarry > 40000 && r < 0.14) return startCarry();
     if (now - lastNote > 60000 && r < 0.24) return startNote();
     if (r < 0.45) return (task = { kind: "peck", until: now + rand(1200, 2600) });
@@ -403,6 +648,8 @@ const Goose = (() => {
 
   function feed() {
     if (!on) return;
+    lastInteraction = performance.now();
+    if (sleeping) wakeUp("food");
     // a goose sulking its way to the food it was given won't be bought off with more
     if (food && el.classList.contains("grumpy")) return honk(0.85);
     const grumpy = !!angryUntil;
@@ -574,7 +821,9 @@ const Goose = (() => {
     e.stopPropagation();
     e.preventDefault();
     const now = performance.now();
+    lastInteraction = now;
     pokes = [...pokes.filter((t) => now - t < 3000), now];
+    if (sleeping) return wakeUp("poke");
     if (angryUntil) { // poking an angry goose: every 2 pokes add 5 s, up to a minute ahead
       if (++angryPokes % 2 === 0 && pokeBonus < POKE_BONUS_MAX) {
         pokeBonus += ANGRY_POKE_MS;
@@ -583,7 +832,7 @@ const Goose = (() => {
       }
       return honk();
     }
-    if (pokes.length >= 3) return enrage();
+    if (pokes.length >= (now < drowsyUntil ? 2 : 3)) return enrage(); // a just-woken goose is touchy
     honk();
     dropCarried();
     // run away from the finger
@@ -638,11 +887,13 @@ const Goose = (() => {
     } else {
       el.classList.remove("walking", "running");
       stride(0, 0, 0);
-      if (task.kind === "peck") view = "side"; // pecking is drawn from the side
+      if (task.kind === "peck" || task.kind === "sleep" || task.hissing || task.splash) view = "side";
       if (task.face) view = task.face;
+      if (task.kind === "sleep") snooze(now);
+      if (task.splash && now - lastDrop > 90) { lastDrop = now; droplet(); }
       setPose(task.kind === "peck" ? "peck" : "stand");
       if (task.eating) bite(task, now);
-      else if (now > task.until) { const done = task; task = null; done.then?.(); }
+      else if (task.until && now > task.until) { const done = task; task = null; done.then?.(); }
     }
     place();
     raf = requestAnimationFrame(tick);
@@ -712,7 +963,11 @@ const Goose = (() => {
     x = Math.random() < 0.5 ? -SIZE : b.right + SIZE; // waddles in from the side
     y = rand(b.top, b.bottom - SIZE);
     const s = randomSpot();
-    task = { kind: "walk", tx: s.x, ty: s.y, speed: WALK };
+    lastInteraction = performance.now();
+    let woke = null;
+    try { woke = localStorage.getItem(WOKE_KEY); } catch {}
+    const morning = new Date().getHours() >= 7 && new Date().getHours() < 11 && woke !== new Date().toDateString();
+    task = { kind: "walk", tx: s.x, ty: s.y, speed: WALK, then: morning ? stretch : undefined };
     if (restoreMood()) { // still angry: no waddling in, it is right there
       x = s.x;
       y = s.y;
@@ -735,6 +990,10 @@ const Goose = (() => {
     food?.el.remove();
     food = null;
     task = null;
+    sleeping = false;
+    el.classList.remove("sleeping", "hissing", "splashing", "stretching");
+    zzzEl.replaceChildren();
+    if (puddle) { puddle.el.remove(); puddle = null; }
     el.remove();
     layer.querySelectorAll(".goose-note").forEach((n) => n.remove());
   }
@@ -757,8 +1016,10 @@ const Goose = (() => {
     hiddenAt = 0;
     if (angryUntil) { angryUntil += shift; angerStart += shift; lastAngryHonk += shift; }
     if (scatterDeadline) scheduleScatterReturn(Math.max(0, scatterDeadline + shift - performance.now()));
+    if (wakeAt) wakeAt += shift;
     last = performance.now();
     raf = requestAnimationFrame(tick);
+    onReturn();
   }
   document.addEventListener("visibilitychange", () => (document.hidden ? freeze() : thaw()));
   addEventListener("pagehide", freeze);
@@ -771,6 +1032,8 @@ const Goose = (() => {
     toggle: () => (on ? stop() : start()),
     feed,
     get active() { return on; },
+    noticeLaunch,
+    returned: onReturn,
     // while it is angry no icon opens, and icons it scattered stay shut until they're back
     blocks: (link) => (on && angryUntil > 0) || link.classList.contains("scattered") || link.classList.contains("carried"),
     // edit mode needs every icon in its slot
