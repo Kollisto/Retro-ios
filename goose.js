@@ -1030,6 +1030,13 @@ const Goose = (() => {
 
   return {
     toggle: () => (on ? stop() : start()),
+    // emergency exit: the goose leaves at once and forgets everything, icons go back in place
+    emergencyExit: () => {
+      if (!on) return;
+      try { localStorage.removeItem(ANGER_KEY); } catch {}
+      el.classList.add("leaving");
+      setTimeout(() => { el.classList.remove("leaving"); stop(); }, 350);
+    },
     feed,
     get active() { return on; },
     noticeLaunch,
