@@ -96,11 +96,12 @@ const Goose = (() => {
       <path d="M22.5 16.2 Q27.5 13 32.5 13.2 Q41.5 14 47.8 21.8 L46.4 23.6 Q40.6 17.2 32.4 16.4 Q27.6 16.1 23.6 18.2Z" fill="${RED}" ${cst}/>
       <path d="M18 25 Q24 36 21.8 50 M42.6 22 Q38.4 35 41.4 50" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/></g>`);
   const FRONT_FANGS = costume(`<path class="gs-fangs-front" d="M30.2 17.4 L31 20.9 L31.9 17.8Z M33.8 17.4 L33 20.9 L32.1 17.8Z" fill="#fff" stroke="${INK}" stroke-width="0.7"/>`);
-  const BACK_CAPE = costume(`<path d="${F_COLLAR}" fill="${CAPE}" ${cst}/><path d="${mirrorX(F_COLLAR)}" fill="${CAPE}" ${cst}/>
-      <path d="M26.8 19.6 L24.6 17.6 M37.2 19.6 L39.4 17.6" stroke="${RED}" stroke-width="1.2" stroke-linecap="round"/>
+  // from behind the stand-up collar is one piece that hides the neck, with a hint of red at its rim
+  const BACK_CAPE = costume(`<path d="M25.6 28 L15.6 12 Q24 17.4 32 17.8 Q40 17.4 48.4 12 L38.4 28Z" fill="${CAPE}" ${cst}/>
+      <path d="M18 14.4 Q24.6 19 32 19.4 Q39.4 19 46 14.4" fill="none" stroke="${RED}" stroke-width="1.1" stroke-linecap="round"/>
+      <path d="M32 21 L32 26.6 M25.4 19.6 L28 26.4 M38.6 19.6 L36 26.4" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/>
       <g class="gs-cape-back"><path d="M26.8 25.4 Q16.4 26 14 34 Q12.4 43 12.2 51.6 ${hem([12.2, 22.1, 32, 41.9, 51.8], 53.6, 49.8)} Q51.6 43 50 34 Q47.6 26 37.2 25.4Z" fill="${CAPE}" ${cst}/>
-      <path d="M27 28 Q22.6 40 22.1 53 M37 28 Q41.4 40 41.9 53 M32 29 L32 52.6" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/></g>
-      <path d="M26.6 25.6 Q32 27.4 37.4 25.6" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/>`);
+      <path d="M27 28 Q22.6 40 22.1 53 M37 28 Q41.4 40 41.9 53 M32 29 L32 52.6" fill="none" stroke="${SHEEN}" stroke-width="1" stroke-linecap="round"/></g>`);
   el.innerHTML = `
     <div class="goose-shadow"></div>
     <div class="goose-sparks"></div>
