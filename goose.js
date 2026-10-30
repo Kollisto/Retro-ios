@@ -403,6 +403,8 @@ const Goose = (() => {
 
   function feed() {
     if (!on) return;
+    // a goose sulking its way to the food it was given won't be bought off with more
+    if (food && el.classList.contains("grumpy")) return honk(0.85);
     const grumpy = !!angryUntil;
     if (grumpy) soothe(); // food always wins, but an angry goose takes its time
     food?.el.remove();
