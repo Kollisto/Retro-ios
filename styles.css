@@ -517,3 +517,36 @@ body { position: relative; }
 .goose.splashing .goose-shadow { animation: shadow-hop .32s ease-in-out infinite; }
 .goose.startled .goose-shadow { animation: shadow-hop .45s ease-out; }
 @keyframes shadow-hop { 30%, 50% { scale: .7; opacity: .7; } }
+
+/* ---- Halloween: Dracula cape and fangs (24 October - 1 November) ---- */
+.goose .gs-costume, .goose .gs-cape-wrap, .goose .gs-cape-spread { display: none; }
+.goose.halloween .gs-costume { display: inline; }
+.goose.halloween.lurking .gs-cape-wrap, .goose.halloween.scaring .gs-cape-spread { display: inline; }
+.goose.halloween.scaring .gs-cape-panels { display: none; }
+.goose.halloween.lurking .gs-brow { display: inline; } /* a sinister look over the cape */
+.goose.honking .gs-fangs-front { transform: translateY(-2px); transform-box: view-box; }
+/* the cape streams out behind as it goes (--flap: 0 standing, 1 running) */
+.gs-cape-side { transform-origin: 37px 27px; transform: rotate(calc(var(--flap, 0) * 26deg)); }
+.gs-cape-under { transform-origin: 37px 27px; transform: rotate(calc(var(--flap, 0) * 7deg)); }
+.gs-cape-l { transform-origin: 27px 26px; transform: rotate(calc(var(--flap, 0) * 13deg)); }
+.gs-cape-r { transform-origin: 37px 26px; transform: rotate(calc(var(--flap, 0) * -13deg)); }
+.gs-cape-back { transform-origin: 32px 25px; transform: scale(calc(1 + var(--flap, 0) * .14), calc(1 - var(--flap, 0) * .1)); }
+.goose.lurking .gs-view { animation: lurk 1.8s ease-in-out infinite; }
+@keyframes lurk { 50% { translate: 0 1px; scale: 1.02 .98; } }
+.goose.scaring .view-front { overflow: visible; animation: boo .5s ease-out; }
+@keyframes boo { 0% { scale: .9; } 35% { scale: 1.18; translate: 0 -6px; } 70% { scale: 1.05; translate: 0 0; } 100% { scale: 1.08; } }
+.goose.scaring .gs-cape-spread { transform-origin: 32px 26px; animation: wings-open .22s ease-out; }
+@keyframes wings-open { from { transform: scaleX(.25); } }
+.app.spooked { animation: spooked .6s ease-out; }
+@keyframes spooked { 15% { translate: 0 -9px; rotate: -6deg; } 35% { translate: 0 0; rotate: 5deg; } 55% { translate: 0 -3px; rotate: -2deg; } 75% { translate: 0 0; rotate: 0deg; } }
+/* a little bat flutters over the sleeping goose */
+.goose-bat { position: absolute; left: 20px; top: -4px; animation: bat-fly 4.4s ease-in-out infinite; }
+.goose-bat svg { display: block; fill: #23212a; overflow: visible; filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff); }
+.goose-bat .bat-wing { transform-origin: 12px 6px; animation: bat-flap .18s ease-in-out infinite alternate; }
+@keyframes bat-flap { to { transform: scaleY(-.5); } }
+@keyframes bat-fly {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(18px, -12px); }
+  50% { transform: translate(2px, -20px); }
+  75% { transform: translate(-16px, -10px); }
+}

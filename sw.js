@@ -1,5 +1,5 @@
 // Offline cache. Bump VERSION whenever any file changes.
-const VERSION = "retro5-v48";
+const VERSION = "retro5-v49";
 const FILES = ["./", "index.html", "styles.css", "i18n.js", "wallpaper.js", "icons.js", "weather.js", "app.js", "goose.js", "manifest.webmanifest",
   "apple-touch-icon.png", "icon-192.png", "icon-512.png"];
 
