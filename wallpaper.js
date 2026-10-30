@@ -115,7 +115,7 @@ function setPhotoWallpaper(file) {
     try {
       localStorage.setItem(WALL_KEY, c.toDataURL("image/jpeg", 0.85));
     } catch {
-      alert("Не удалось сохранить обои: картинка слишком большая.");
+      alert(T.tooBig);
     }
     paintWallpaper();
   };
