@@ -202,7 +202,7 @@ function startDrag() {
 for (const container of [grid, dock]) {
   container.addEventListener("pointerdown", (e) => {
     const el = e.target.closest(".app");
-    if (!el) return;
+    if (!el || Goose.blocks(el)) return; // no rearranging while the goose is on the rampage
     press = { el, x: e.clientX, y: e.clientY, dragging: false };
     if (editing) startDrag();
     else press.timer = setTimeout(() => { setEditing(true); startDrag(); }, LONG_PRESS_MS);
@@ -307,6 +307,7 @@ document.addEventListener("click", (e) => {
   }
   if (!link) return;
   e.preventDefault();
+  if (Goose.blocks(link)) return deny(link);
   if (link.dataset.id === "refresh") refreshApp(link);
   else if (link.dataset.id === "goose") Goose.toggle();
   else if (link.getAttribute("href") !== "#") launch(link);
@@ -369,6 +370,14 @@ homeBtn.addEventListener("click", (e) => {
   else if (editing) setEditing(false);
   else Goose.feed();
 });
+
+// An icon the angry goose won't let you open gives a little "no" shake.
+function deny(link) {
+  const icon = link.querySelector(".icon");
+  icon.classList.remove("denied");
+  void icon.offsetWidth;
+  icon.classList.add("denied");
+}
 
 // --- "Обновить": drop the offline cache and reload, so the newest version shows up ---
 // The layout, wallpaper and weather settings live in local storage and are kept.

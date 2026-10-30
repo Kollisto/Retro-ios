@@ -412,3 +412,7 @@ body { position: relative; }
 
 /* fed while angry: still frowning while it walks to the food */
 .goose.grumpy .gs-brow { display: inline; }
+
+/* tapping an icon the goose won't let you open */
+.icon.denied { animation: deny .32s ease-in-out; }
+@keyframes deny { 0%, 100% { translate: 0; } 20% { translate: -4px; } 40% { translate: 4px; } 60% { translate: -3px; } 80% { translate: 2px; } }

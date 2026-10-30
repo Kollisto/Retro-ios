@@ -674,6 +674,8 @@ const Goose = (() => {
     toggle: () => (on ? stop() : start()),
     feed,
     get active() { return on; },
+    // while it is angry no icon opens, and icons it scattered stay shut until they're back
+    blocks: (link) => (on && angryUntil > 0) || link.classList.contains("scattered") || link.classList.contains("carried"),
     // edit mode needs every icon in its slot
     releaseIcon: () => { fury = false; dropCarried(); restoreScattered(); },
   };
