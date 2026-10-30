@@ -119,8 +119,8 @@ const Goose = (() => {
       ${fold("M27 28 Q21.6 40 21 54.6 M37 28 Q42.4 40 43 54.6 M17 33 Q14 44 13.8 55.6 M47 33 Q50 44 50.2 55.6")}</g>`);
   // asleep: lying down in a round heap, the big round head resting in front, eyes shut
   // (in the Halloween season wrapped up in the cape, the head peeking out as from a hood)
-  const SLEEP_BODY = "M4 60 Q3 46 14 40 Q26 34 38 36.4 Q50 39 53 50 Q54.6 56 53 60Z";
-  const SLEEP_TAIL = "M6 50 Q0 46 -1 50 Q1.6 54 5.4 55Z";
+  const SLEEP_BODY = "M3.4 60 Q1.4 46 12.4 39.4 Q24 33 38 35 Q51.6 37.6 54.8 50 Q56.2 55.8 54.6 60Z";
+  const SLEEP_TAIL = "M6.4 45.6 Q2 42.4 0.6 44.6 Q0.8 47.6 4.6 49.4Z";
   const SLEEP_HEAD = "M40 43.2 Q48.4 43.2 48.4 51 Q48.4 58.8 40 58.8 Q31.6 58.8 31.6 51 Q31.6 43.2 40 43.2Z";
   const SLEEP_BLANKET = costume(`<path d="M3 60.4 Q0.6 46 12 39 Q24 32.4 38 34.6 Q52 37.4 55.4 50 Q57 56 55 60.4 ${rag([[52.4, 59], [49.8, 60.8], [47.2, 59.2], [44.6, 60.8], [42, 59.2], [39.4, 60.8], [36.8, 59.2], [34.2, 60.8], [31.6, 59.2], [29, 60.8], [26.4, 59.2], [23.8, 60.8], [21.2, 59.2], [18.6, 60.8], [16, 59.2], [13.4, 60.8], [10.8, 59.2], [8.2, 60.8], [5.6, 59.4]])}Z" fill="${CAPE}" ${cst}/>
       ${fold("M14 40 Q12 50 13 59.4 M24 35.4 Q22 47 23 59.4 M50.6 43 Q54 50 52.6 59")}
@@ -128,7 +128,7 @@ const Goose = (() => {
       <path d="M30.4 45 L26.4 34.8 Q31.4 37 34.2 41Z" fill="${CAPE}" ${cst}/><path d="M30.8 42.6 L28.4 37 Q31.2 38.6 32.8 40.8Z" fill="${RED}"/>`);
   const SLEEPING = `<g class="gs-sleep">
       ${outline(SLEEP_BODY)}${outline(SLEEP_TAIL)}${fill(SLEEP_BODY)}${fill(SLEEP_TAIL)}
-      <path d="M10 52 Q18 44 28 46" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>
+      <path d="M29.4 47.6 Q30.6 40.4 40 40 Q49.6 40.2 51 49 M12 47 Q17 41.4 25.4 40.6 M9.4 53.6 Q14 48 21.4 47.6" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>
       ${SLEEP_BLANKET}${outline(SLEEP_HEAD)}${fill(SLEEP_HEAD)}
       <path d="M46 52.6 Q51.4 52.4 53.4 55 Q50.4 57.6 46 56.8Z" fill="${ORANGE}" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
       <path d="M39.4 50.2 Q41.6 52.4 43.8 50.2" fill="none" stroke="${INK}" stroke-width="1.3" stroke-linecap="round"/></g>`;
