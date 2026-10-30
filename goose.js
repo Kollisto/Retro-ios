@@ -44,8 +44,13 @@ const Goose = (() => {
   // front and back: an egg-shaped body with the neck rising from its middle
   const EGG = "M32 22 Q46.5 24 47 38.5 Q47 51 32 51.5 Q17 51 17 38.5 Q17.5 24 32 22Z";
   const NECK_UP = "M26.5 33 Q25.5 19 26.5 13.5 Q27.5 5.5 32 5.5 Q36.5 5.5 37.5 13.5 Q38.5 19 37.5 33Z";
+  // pink flush over the head and neck, shown in a fury
+  const blushGrad = (id) => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff6f93"/><stop offset=".38" stop-color="#ff9bb3"/><stop offset=".75" stop-color="#ffc4d2" stop-opacity="0"/></linearGradient></defs>`;
+  const blush = (d, id) => `<path class="gs-blush" d="${d}" fill="url(#${id})"/>`;
   el.innerHTML = `
-    <svg class="gs-view view-side" viewBox="0 0 64 64">
+    <div class="goose-sparks"></div>
+    <svg class="gs-view view-side" viewBox="0 0 64 64">${blushGrad("gs-pink-s")}
       ${shadow}
       ${legs(sideLeg, 24, 32)}
       ${outline(BODY)}
@@ -54,7 +59,7 @@ const Goose = (() => {
       ${fill(BODY)}
       <g class="gs-tail">${fill(TAIL)}</g>
       <g class="gs-neck">
-        ${fill(NECK)}
+        ${fill(NECK)}${blush(NECK, "gs-pink-s")}
         <g class="gs-beak" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round" fill="${ORANGE}">
           <path class="gs-beak-bottom" d="M50.5 16.5 Q55 16.5 57 17.6 Q54.5 19.6 50 19.2Z"/>
           <path class="gs-beak-top" d="M50 12.4 Q56 12 59 14.6 Q56.5 17.4 50.2 17.6Z"/>
@@ -63,21 +68,21 @@ const Goose = (() => {
         <path class="gs-brow" d="M43.6 10.8 L48.6 12.9" stroke="${INK}" stroke-width="1.6" stroke-linecap="round"/>
       </g>
     </svg>
-    <svg class="gs-view view-front" viewBox="0 0 64 64">
+    <svg class="gs-view view-front" viewBox="0 0 64 64">${blushGrad("gs-pink-f")}
       ${shadow}
       ${legs(frontLeg, 26, 38)}
-      ${outline(EGG)}${outline(NECK_UP)}${fill(EGG)}${fill(NECK_UP)}
+      ${outline(EGG)}${outline(NECK_UP)}${fill(EGG)}${fill(NECK_UP)}${blush(NECK_UP, "gs-pink-f")}
       <path d="M19.5 36 Q20.5 44 26 48 M44.5 36 Q43.5 44 38 48" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>
       <circle cx="29.2" cy="11.2" r="1.15" fill="${INK}"/><circle cx="34.8" cy="11.2" r="1.15" fill="${INK}"/>
       <ellipse class="gs-mouth" cx="32" cy="17.6" rx="2.2" ry="2.6" fill="#7a1d0a" stroke="${INK}" stroke-width="1.2"/>
       <path class="gs-beak-front" d="M28.8 14 Q32 12.8 35.2 14 Q34.2 18.6 32 19.2 Q29.8 18.6 28.8 14Z" fill="${ORANGE}" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>
       <path class="gs-brow" d="M26.8 8.2 L30.6 9.6 M37.2 8.2 L33.4 9.6" stroke="${INK}" stroke-width="1.5" stroke-linecap="round"/>
     </svg>
-    <svg class="gs-view view-back" viewBox="0 0 64 64">
+    <svg class="gs-view view-back" viewBox="0 0 64 64">${blushGrad("gs-pink-b")}
       ${shadow}
       ${legs(frontLeg, 26, 38)}
       ${outline(EGG)}${outline(NECK_UP)}<g class="gs-tail gs-tail-back">${outline(BACK_TAIL)}</g>
-      ${fill(EGG)}${fill(NECK_UP)}<g class="gs-tail gs-tail-back">${fill(BACK_TAIL)}</g>
+      ${fill(EGG)}${fill(NECK_UP)}${blush(NECK_UP, "gs-pink-b")}<g class="gs-tail gs-tail-back">${fill(BACK_TAIL)}</g>
       <path d="M24.5 31 Q21.5 41 29.5 48 M39.5 31 Q42.5 41 34.5 48" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>
     </svg>`;
 
@@ -162,6 +167,19 @@ const Goose = (() => {
     honkTimer = setTimeout(() => el.classList.remove("honking"), 420);
   }
 
+  // ---- fury sparks: red and gold sparks crackle above the goose ----
+  const sparksEl = el.querySelector(".goose-sparks");
+  let lastSpark = 0;
+  function spark() {
+    const sp = document.createElement("i");
+    sp.style.left = rand(8, 56) + "px";
+    sp.style.setProperty("--drift", rand(-10, 10) + "px");
+    sp.style.setProperty("--size", rand(6, 11) + "px");
+    sp.style.background = Math.random() < 0.5 ? "#ffd23f" : "#ff2a1f";
+    sparksEl.append(sp);
+    setTimeout(() => sp.remove(), 750);
+  }
+
   // ---- tail ----
   function wag() {
     el.classList.remove("wagging");
@@ -212,7 +230,9 @@ const Goose = (() => {
       return;
     }
     const side = view === "side";
-    const len = speed > WALK * 1.5 ? RUN_STRIDE : WALK_STRIDE;
+    const running = speed > WALK * 1.5;
+    // seen from the front or back, steps look shorter (and keep the legs from over-stretching)
+    const len = side ? (running ? RUN_STRIDE : WALK_STRIDE) : (running ? 13 : 10);
     const reach = len / 4;
     // side view steps with the horizontal motion, front/back with the vertical
     const along = side ? Math.abs(mx) : Math.abs(my);
@@ -233,7 +253,7 @@ const Goose = (() => {
           footprint(foot.wx, y);
         }
         dx = side ? Math.max(-reach * 1.6, Math.min(reach * 1.6, (foot.wx - hipX) * dir)) : 0;
-        dy = Math.max(-len / 2 - 2, Math.min(len / 2 + 2, foot.wy - y));
+        dy = Math.max(-7, Math.min(7, foot.wy - y)); // the leg stretches only so far
       } else {
         // swinging forward through the air
         foot.planted = false;
@@ -503,6 +523,7 @@ const Goose = (() => {
   function tick(now) {
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
+    if (fury && now - lastSpark > 70) { lastSpark = now; spark(); }
     if (angryUntil) {
       if (now > angryUntil) calmDown();
       else if (now - lastAngryHonk > 1100) { lastAngryHonk = now; honk(); }
