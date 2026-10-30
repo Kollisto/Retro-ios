@@ -416,3 +416,67 @@ body { position: relative; }
 /* tapping an icon the goose won't let you open */
 .icon.denied { animation: deny .32s ease-in-out; }
 @keyframes deny { 0%, 100% { translate: 0; } 20% { translate: -4px; } 40% { translate: 4px; } 60% { translate: -3px; } 80% { translate: 2px; } }
+
+/* --- sleep --- */
+.goose .gs-eye-shut { display: none; }
+.goose.sleeping .gs-eye, .goose.sleeping .gs-brow, .goose.sleeping .gs-beak { display: none; } /* beak tucked into the feathers */
+.goose.sleeping .gs-eye-shut { display: inline; }
+.goose.sleeping .gs-leg { display: none; }
+.goose.sleeping .view-side { translate: 0 7px; animation: breathe 3.2s ease-in-out infinite; }
+.goose.sleeping .gs-neck { transform: rotate(-68deg); transition: transform .8s ease; }
+@keyframes breathe { 50% { scale: 1.025 .975; } }
+.goose-zzz { position: absolute; left: 0; right: 0; top: 0; height: 0; pointer-events: none; }
+.goose-zzz i {
+  position: absolute;
+  top: 6px;
+  font: italic 800 15px "Helvetica Neue", sans-serif;
+  color: #3a4756;
+  text-shadow: 0 0 2px #fff, 0 0 3px #fff;
+  animation: zzz 2.6s ease-out forwards;
+}
+@keyframes zzz {
+  from { transform: translate(0, 0) scale(.6); opacity: 0; }
+  20% { opacity: 1; }
+  to { transform: translate(14px, -34px) scale(1.3); opacity: 0; }
+}
+.goose.startled .gs-view { animation: startle .45s ease-out; }
+@keyframes startle { 30% { translate: 0 -10px; } 60% { translate: 0 0; } 80% { translate: 0 -3px; } }
+.goose.stretching .gs-neck { animation: stretch-neck 1.6s ease-in-out; }
+.goose.stretching .view-side { animation: stretch-body 1.6s ease-in-out; }
+@keyframes stretch-neck { 30%, 65% { transform: rotate(-16deg) scale(1, 1.08); } }
+@keyframes stretch-body { 30%, 65% { scale: 1.05 .96; } }
+
+/* --- jealousy: neck stretched low and forward, beak open --- */
+.goose.hissing .gs-neck { transform: rotate(34deg); }
+.goose.hissing .gs-beak-bottom { transform: rotate(26deg); }
+.goose.hissing .view-side { animation: fume .12s linear infinite; }
+
+/* --- puddles --- */
+.goose-puddle {
+  position: absolute;
+  width: 60px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 40% 35%, rgba(255, 255, 255, .55), transparent 35%),
+    radial-gradient(ellipse, rgba(70, 140, 205, .55), rgba(60, 120, 185, .4) 60%, rgba(60, 120, 185, 0) 72%);
+  animation: puddle-in .8s ease-out;
+  transition: transform 5s ease-in, opacity 5s ease-in;
+}
+.goose-puddle.drying { transform: scale(.3); opacity: 0; }
+@keyframes puddle-in { from { transform: scale(.2); opacity: 0; } }
+.goose.splashing .view-side { animation: hop .32s ease-in-out infinite; }
+@keyframes hop { 50% { translate: 0 -6px; } }
+.goose-drop {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(90, 160, 225, .9);
+  box-shadow: 0 0 1px rgba(255, 255, 255, .9) inset;
+  animation: drop .6s ease-out forwards;
+}
+@keyframes drop {
+  50% { transform: translate(calc(var(--dx) * .6), var(--dy)); }
+  to { transform: translate(var(--dx), 4px); opacity: 0; }
+}
+.goose-print.wet { filter: hue-rotate(170deg) saturate(2.5) brightness(.9); }

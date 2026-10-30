@@ -418,6 +418,7 @@ function launch(link) {
   launchEl.style.transition = "";
   placeOver({ left: 0, top: 0, width: innerWidth, height: appHeight() }, "0");
   launchEl.classList.add("full");
+  Goose.noticeLaunch(link.dataset.id);
   launched = { link, timer: setTimeout(() => {
     location.href = link.href;
     // If nothing opened (or the user declined iOS's prompt), come back on our own.
@@ -431,6 +432,7 @@ function closeApp() {
   clearTimeout(launched.timer);
   const rect = launched.link.querySelector(".icon").getBoundingClientRect();
   launched = null;
+  Goose.returned();
   launchEl.classList.remove("full");
   placeOver(rect, "13px");
   setTimeout(() => { launchEl.hidden = true; }, 380);
